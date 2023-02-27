@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 @Injectable()
 export class TabbedPaneService {
@@ -8,7 +8,7 @@ export class TabbedPaneService {
   // readonly pageCount = this.pageCountSubject.asObservable();
 
   // private currentPageSubject = new BehaviorSubject<number>(1);
-  // // eslint-disable-next-line @typescript-eslint/member-ordering
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   // readonly currentPage = this.currentPageSubject.asObservable();
 
   readonly pageCount = new BehaviorSubject<number>(0);

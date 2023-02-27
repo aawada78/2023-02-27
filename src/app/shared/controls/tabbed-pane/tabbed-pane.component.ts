@@ -14,12 +14,12 @@ export class TabbedPaneComponent implements OnInit, AfterContentInit, AfterViewI
   activeTab: TabComponent | undefined;
   currentPage = 0;
 
+  constructor(private tabbedPaneService: TabbedPaneService) {}
+
   // tabs: Array<TabComponent> = [];
   get tabs(): TabComponent[] {
     return this.tabQueryList?.toArray() ?? [];
   }
-
-  constructor(private tabbedPaneService: TabbedPaneService) {}
 
   ngAfterViewInit(): void {
     this.tabbedPaneService.pageCount.next(this.tabs.length);
