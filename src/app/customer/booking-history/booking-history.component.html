@@ -1,0 +1,17 @@
+<h1>Booking History</h1>
+
+<app-tabbed-pane #pane>
+    <!-- <app-tab *ngFor="let bla of genericTabs"></app-tab> -->
+    <app-tab title="Anstehende Flüge">
+        <p>Keine ansehenden Flüge</p>
+    </app-tab>
+
+    <app-tab title="Verspätete Flüge">
+        <p>Keine verspäteten Flüge</p>
+    </app-tab>
+
+    <app-tab title="Sonstige Flüge">
+        <p>Keine sonstigen Flüge</p>
+    </app-tab>
+</app-tabbed-pane>
+<p>{{ pane.currentPage }}</p>

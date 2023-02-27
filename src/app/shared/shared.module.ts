@@ -10,6 +10,9 @@ import { FormsModule } from '@angular/forms';
 
 // Von der CLI eingefügt
 import { CityValidationDirective } from './validation/city-validation.directive';
+import { TabbedPaneComponent } from './controls/tabbed-pane/tabbed-pane.component';
+import { TabComponent } from './controls/tab/tab.component';
+import { TabNavigatorComponent } from './controls/tab-navigator/tab-navigator.component';
 
 @NgModule({
   imports: [CommonModule, FormsModule],
@@ -20,7 +23,10 @@ import { CityValidationDirective } from './validation/city-validation.directive'
     StatusFilterPipe,
 
     // Von der CLI eingefügt
-    CityValidationDirective
+    CityValidationDirective,
+     TabbedPaneComponent,
+     TabComponent,
+     TabNavigatorComponent
   ],
   exports: [
     DateComponent,
@@ -31,7 +37,10 @@ import { CityValidationDirective } from './validation/city-validation.directive'
     CommonModule,
 
     // Neue Einträge
-    CityValidationDirective
+    CityValidationDirective,
+     TabbedPaneComponent,
+     TabComponent,
+     TabNavigatorComponent
   ]
 })
 export class SharedModule {}
