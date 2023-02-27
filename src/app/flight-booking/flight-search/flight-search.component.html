@@ -7,8 +7,8 @@
 <form #f="ngForm">
   <div class="form-group">
     <label>From:</label>
-    <input [(ngModel)]="from" [ngModelOptions]="{ updateOn: 'change'}" appCity class="form-control" minlength="3" name="from"
-           required>
+    <input [(ngModel)]="from" [ngModelOptions]="{ updateOn: 'change'}" appCity class="form-control" minlength="3"
+      name="from" required>
   </div>
 
   <div *ngIf="!f?.controls?.from?.valid" class="error">
@@ -54,7 +54,9 @@
 
 <div class="row">
   <div *ngFor="let f of flights" class="col-xs-12 col-sm-6 col-md-4 col-lg-4 col-xl-3">
-    <flight-card [(selected)]="basket[f.id]" [item]="f">
+    <!-- <flight-card [(selected)]="basket[f.id]" [item]="f">
+    </flight-card> -->
+    <flight-card [selected]="basket[f.id]" (selectedChange)="basket[f.id] = $event" [item]="f">
     </flight-card>
   </div>
 </div>
