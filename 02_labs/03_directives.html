@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Workshop by AngularArchitects.io</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="description" content="Description" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs/styles/atom-one-light.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="copy.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+
+  <body class="ready">
+    <!-- <nav class="app-nav no-badge">
+    </nav> -->
+
+    <!-- placeholder:cover-page -->
+
+    <main>
+      <button class="sidebar-toggle" aria-label="Menu">
+        <div class="sidebar-toggle-button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <aside class="sidebar">
+        <div class="sidebar-nav">
+          <p>&nbsp;</p>
+          <ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="slides.html">Slides</a></li>
+<li><a href="00_getting-started.html">Getting Started</a></li>
+<li><a href="01_components.html">Components Deep Dive</a></li>
+<li><a href="02_data-binding.html">Data Binding with OnPush</a></li>
+<li><a href="03_directives.html">Directives - Deep Dive</a></li>
+<li><a href="05_routing_advanced.html">Advanced Routing</a></li>
+<li><a href="06a_template-driven_forms.html">Template Driven Forms</a></li>
+<li><a href="06b_reactive_forms.html">Reactive Forms</a></li>
+</ul>
+
+        </div>
+      </aside>
+
+      <section class="content">
+        <article class="markdown-section" id="main">
+          <h1 id="directives-deep-dive">Directives - Deep Dive</h1>
+<ul>
+<li><a href="#directives---deep-dive">Directives - Deep Dive</a>
+<ul>
+<li><a href="#working-with-attribute-directives">Working with Attribute Directives</a>
+<ul>
+<li><a href="#extending-existing-controls-with-directives">Extending existing Controls with Directives</a></li>
+<li><a href="#using-hostbinding-and-hostlistener">Using HostBinding and HostListener</a></li>
+<li><a href="#bonus-directives-and-template-variables-">Bonus: Directives and Template Variables *</a></li>
+<li><a href="#bonus-working-with-templates-and-containers-">Bonus: Working with Templates and Containers *</a></li>
+<li><a href="#bonus-passing-parameters-to-templates-">Bonus: Passing Parameters to Templates *</a></li>
+</ul>
+</li>
+<li><a href="#structural-directives">Structural Directives</a>
+<ul>
+<li><a href="#implement-a-simple-datatable">Implement a Simple DataTable</a></li>
+<li><a href="#bonus-custom-templateoutletdirective-">Bonus: Custom TemplateOutletDirective ***</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="working-with-attribute-directives">Working with Attribute Directives</h2>
+<h3 id="extending-existing-controls-with-directives">Extending existing Controls with Directives</h3>
+<ol>
+<li>
+<p>Add a <code>ClickWithWarningDirective</code>:</p>
+<pre><code>ng g directive shared/controls/click-with-warning --export
+</code></pre>
+</li>
+<li>
+<p>Make sure, the new directive is <code>declared</code> and <code>exported</code> in your <code>SharedModule</code>.</p>
+</li>
+<li>
+<p>Open the generated file <code>click-with-warning.directive.ts</code> and adjust it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/click-with-warning.directive.ts</span>
+
+<span class="hljs-comment">// Imports aktualisieren:</span>
+<span class="hljs-keyword">import</span> { Directive, ElementRef, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Directive</span>({
+  selector: <span class="hljs-string">&#x27;[appClickWithWarning]&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> ClickWithWarningDirective <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> elementRef: ElementRef</span>) {}
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.elementRef.nativeElement.setAttribute(<span class="hljs-string">&#x27;class&#x27;</span>, <span class="hljs-string">&#x27;btn btn-danger&#x27;</span>);
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>In your <code>booking-history.component.html</code>, create a button with an attribute <code>appClickWithWarning</code>:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/customer/booking-history/booking-history.component.html --&gt;</span>
+
+[...]
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">appClickWithWarning</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+[...]
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and assure yourself that this button is displayed orange (because the directive assigns the classes <code>btn</code> and <code>btn-danger</code>).</p>
+</li>
+</ol>
+<h3 id="using-hostbinding-and-hostlistener">Using HostBinding and HostListener</h3>
+<ol>
+<li>
+<p>Open the file <code>click-with-warning.directive.ts</code> and extend it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/click-with-warning.directive.ts</span>
+
+<span class="hljs-comment">// Imports aktualisieren:</span>
+<span class="hljs-keyword">import</span> {
+  Directive,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  Input,
+  OnInit,
+  Output,
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Directive</span>({
+  selector: <span class="hljs-string">&#x27;[appClickWithWarning]&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> ClickWithWarningDirective <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-comment">// Input und Output ergänzen:</span>
+  <span class="hljs-meta">@Input</span>() warning = <span class="hljs-string">&#x27;Are you sure?&#x27;</span>;
+  <span class="hljs-meta">@Output</span>() appClickWithWarning = <span class="hljs-keyword">new</span> EventEmitter();
+
+  <span class="hljs-comment">// HostBinding ergänzen</span>
+  <span class="hljs-meta">@HostBinding</span>(<span class="hljs-string">&#x27;class&#x27;</span>) classBinding: <span class="hljs-built_in">string</span> | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> elementRef: ElementRef</span>) {}
+
+  <span class="hljs-comment">// HostListener ergänzen:</span>
+  <span class="hljs-meta">@HostListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, [<span class="hljs-string">&#x27;$event.shiftKey&#x27;</span>])
+  handleClick(shiftKey: <span class="hljs-built_in">boolean</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (shiftKey || confirm(<span class="hljs-built_in">this</span>.warning)) {
+      <span class="hljs-built_in">this</span>.appClickWithWarning.emit();
+    }
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-comment">// Klassen über HostBinding zuweisen:</span>
+    <span class="hljs-built_in">this</span>.classBinding = <span class="hljs-string">&#x27;btn btn-danger&#x27;</span>;
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>booking-history.component.ts</code> and add a delete method with a dummy implementation:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">delete</span>(): <span class="hljs-built_in">void</span> {
+  <span class="hljs-built_in">console</span>.debug(<span class="hljs-string">&#x27;delete ...&#x27;</span>);
+}
+</code></pre>
+</li>
+<li>
+<p>Open the template <code>booking-history.component.html</code> and introduce an event handler for the appClickWithWarning event:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/customer/booking-history/booking-history.component.html --&gt;</span>
+
+[...]
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">appClickWithWarning</span>)=<span class="hljs-string">&quot;delete()&quot;</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+[...]
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and try it out.</p>
+</li>
+</ol>
+<h3 id="bonus-directives-and-template-variables-">Bonus: Directives and Template Variables *</h3>
+<ol>
+<li>
+<p>Open the file <code>click-with-warning.directive.ts</code> and introduce the <code>exportAs</code> property in the Directive metadata:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/click-with-warning.directive.ts</span>
+
+<span class="hljs-meta">@Directive</span>({
+  selector: <span class="hljs-string">&#x27;[appClickWithWarning]&#x27;</span>,
+  exportAs: <span class="hljs-string">&#x27;clickWithWarning&#x27;</span>
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> ClickWithWarningDirective <span class="hljs-keyword">implements</span> OnInit {
+  [...]
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>booking-history.component.html</code>, and introduce a template variable <code>cww</code> for the button:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/customer/booking-history/booking-history.component.html --&gt;</span>
+
+[...]
+
+<span class="hljs-comment">&lt;!-- Add #cww --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">appClickWithWarning</span>)=<span class="hljs-string">&quot;delete()&quot;</span> #<span class="hljs-attr">cww</span>=<span class="hljs-string">&quot;clickWithWarning&quot;</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Use #cww --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;cww.handleClick(true)&quot;</span>&gt;</span>Delete without asking questions!<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+</code></pre>
+<p>Please note that this example assigned <code>clickWithWarning</code> to <code>#cww</code>. This is the same value that was used together with expertAs above. Because of this, Angular knows, that you don't want to reference the button element but the directive applied to it.</p>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and try it out.</p>
+</li>
+</ol>
+<h3 id="bonus-working-with-templates-and-containers-">Bonus: Working with Templates and Containers *</h3>
+<p>In this bonus lab, you write a <code>Tooltip</code> directive that adds a template next to the host element and displays it when the mouse cursor is placed over the host.</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> [<span class="hljs-attr">appTooltip</span>]=<span class="hljs-string">&quot;tmpl&quot;</span> /&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">tmpl</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>2 Tips for Success<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Don&#x27;t tell everything!<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ng-template</span>&gt;</span>
+</code></pre>
+<ol>
+<li>
+<p>Add a TooltipDirective:</p>
+<pre><code>ng g d shared/tooltip --export
+</code></pre>
+</li>
+<li>
+<p>As always, make sure, this directive is declared and exported in your <code>SharedModule</code>.</p>
+</li>
+<li>
+<p>Open the generated <code>tooltip.directive.ts</code> and modify it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/tooltip.directive.ts</span>
+
+<span class="hljs-keyword">import</span> { Directive, ElementRef, EmbeddedViewRef, Input, OnInit, TemplateRef, ViewContainerRef } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Directive</span>({
+  selector: <span class="hljs-string">&#x27;[appTooltip]&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TooltipDirective <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-keyword">private</span> viewRef: EmbeddedViewRef&lt;unknown&gt; | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-meta">@Input</span>(<span class="hljs-string">&#x27;appTooltip&#x27;</span>) template: TemplateRef&lt;unknown&gt; | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> host: ElementRef, <span class="hljs-keyword">private</span> viewContainer: ViewContainerRef</span>) {}
+
+  setHidden(hidden: <span class="hljs-built_in">boolean</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.viewRef?.rootNodes.forEach(<span class="hljs-function">(<span class="hljs-params">nativeElement</span>) =&gt;</span> {
+      nativeElement.hidden = hidden;
+    });
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.template) {
+      <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-built_in">this</span>.viewRef = <span class="hljs-built_in">this</span>.viewContainer.createEmbeddedView(<span class="hljs-built_in">this</span>.template);
+
+    <span class="hljs-built_in">this</span>.setHidden(<span class="hljs-literal">true</span>);
+
+    <span class="hljs-keyword">const</span> elm = <span class="hljs-built_in">this</span>.host.nativeElement <span class="hljs-keyword">as</span> HTMLElement;
+    elm.addEventListener(<span class="hljs-string">&#x27;mouseover&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+      <span class="hljs-built_in">this</span>.setHidden(<span class="hljs-literal">false</span>);
+    });
+
+    elm.addEventListener(<span class="hljs-string">&#x27;mouseout&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+      <span class="hljs-built_in">this</span>.setHidden(<span class="hljs-literal">true</span>);
+    });
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Open the <code>BookingHistoryComponent</code>'s template and add the following elements:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> [<span class="hljs-attr">appTooltip</span>]=<span class="hljs-string">&quot;tmpl&quot;</span> /&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">tmpl</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>2 Tips for Success<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Don&#x27;t tell everything!<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ng-template</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Test your solution.</p>
+</li>
+</ol>
+<h3 id="bonus-passing-parameters-to-templates-">Bonus: Passing Parameters to Templates *</h3>
+<ol>
+<li>In your Tooltip Directive, pass a context with data to <code>createEmbeddedView</code>'s 2nd parameter:</li>
+</ol>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/tooltip.directive.ts</span>
+
+<span class="hljs-built_in">this</span>.viewRef = <span class="hljs-built_in">this</span>.viewContainer.createEmbeddedView(<span class="hljs-built_in">this</span>.template, {
+  $implicit: <span class="hljs-string">&#x27;Tooltip!&#x27;</span>,
+  helpLink: <span class="hljs-string">&#x27;http://www.google.com&#x27;</span>
+});
+</code></pre>
+<ol start="2">
+<li>In your <code>BookingHistoryComponent</code>, adjust your template, so that the passed values are used:</li>
+</ol>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">tmpl</span> <span class="hljs-attr">let-title</span> <span class="hljs-attr">let-link</span>=<span class="hljs-string">&quot;helpLink&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>{{title}}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>
+        Deletes EVERYTHING!
+    <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span> [<span class="hljs-attr">href</span>]=<span class="hljs-string">&quot;link&quot;</span>&gt;</span>More<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ng-template</span>&gt;</span>
+</code></pre>
+<h2 id="structural-directives">Structural Directives</h2>
+<h3 id="implement-a-simple-datatable">Implement a Simple DataTable</h3>
+<p>In this lab, you will implement a simple DataTable with configurable fields:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">app-data-table</span> [<span class="hljs-attr">data</span>]=<span class="hljs-string">&quot;flights&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;id&#x27;&quot;</span>&gt;</span>{{data}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;from&#x27;&quot;</span>&gt;</span>{{data}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;to&#x27;&quot;</span>&gt;</span>{{data}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;date&#x27;&quot;</span>&gt;</span>{{data | date:&#x27;dd.MM.yyyy HH:mm&#x27;}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-data-table</span>&gt;</span>
+</code></pre>
+<ol>
+<li>
+<p>Create a <code>TableFieldDirective</code>:</p>
+<pre><code>ng generate directive shared/controls/data-table/table-field --export
+</code></pre>
+</li>
+<li>
+<p>Ensure yourself that this directive is declared and exported in your <code>SharedModule</code>.</p>
+</li>
+<li>
+<p>Open the generated file <code>table-field.directive.ts</code> and adjust it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/data-table/table-field.directive.ts</span>
+
+<span class="hljs-keyword">import</span> { Directive, Input, TemplateRef } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Directive</span>({
+  selector: <span class="hljs-string">&#x27;[appTableField]&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TableFieldDirective {
+  <span class="hljs-comment">// eslint-disable-next-line @angular-eslint/no-input-rename</span>
+  <span class="hljs-meta">@Input</span>(<span class="hljs-string">&#x27;appTableFieldAs&#x27;</span>) propName = <span class="hljs-string">&#x27;&#x27;</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">public</span> templateRef: TemplateRef&lt;unknown&gt;</span>) {}
+}
+</code></pre>
+</li>
+<li>
+<p>Add a <code>DataTableComponent</code>:</p>
+<pre><code>ng g c shared/controls/data-table --export
+</code></pre>
+</li>
+<li>
+<p>As always, ensure yourself that this component is declared and exported in the <code>SharedModule</code>.</p>
+</li>
+<li>
+<p>Open the file <code>data-table.component.ts</code> and adjust it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/data-table/data-table.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, ContentChildren, Input, OnInit, QueryList } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { TableFieldDirective } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./table-field.directive&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-data-table&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./data-table.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./data-table.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> DataTableComponent {
+  <span class="hljs-comment">// eslint-disable-next-line @typescript-eslint/no-explicit-any</span>
+  <span class="hljs-meta">@Input</span>() data: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">any</span>&gt; = [];
+
+  <span class="hljs-meta">@ContentChildren</span>(TableFieldDirective)
+  fields: QueryList&lt;TableFieldDirective&gt; | <span class="hljs-literal">undefined</span>;
+
+  get fieldList() {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.fields?.toArray();
+  }
+
+}
+</code></pre>
+</li>
+<li>
+<p>Open the <code>DataTableComponent</code>'s template (<code>data-table.component.html</code>) and adjust it as follows:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/data-table/data-table.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">table</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;table&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let row of data&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let f of fieldList&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">ng-container</span> *<span class="hljs-attr">ngTemplateOutlet</span>=<span class="hljs-string">&quot;f.templateRef; context: { $implicit: row[f.propName] }&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ng-container</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">table</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>In order to try out your solution, open the file <code>booking-history.component.ts</code> and introduce a <code>flights</code> array:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/customer/booking-history/booking-history.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-comment">// Import hinzufügen:</span>
+<span class="hljs-keyword">import</span> { Flight } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;src/app/flight-booking/flight&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-booking-history&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./booking-history.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./booking-history.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BookingHistoryComponent <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-comment">// Eigenschaft hinzufügen</span>
+  flights: Flight[] = [
+    { id: <span class="hljs-number">1</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Hamburg&#x27;</span>, to: <span class="hljs-string">&#x27;Berlin&#x27;</span>, date: <span class="hljs-string">&#x27;2025-02-01T17:00+01:00&#x27;</span> },
+    { id: <span class="hljs-number">2</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Hamburg&#x27;</span>, to: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, date: <span class="hljs-string">&#x27;2025-02-01T17:30+01:00&#x27;</span> },
+    { id: <span class="hljs-number">3</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Hamburg&#x27;</span>, to: <span class="hljs-string">&#x27;Mallorca&#x27;</span>, date: <span class="hljs-string">&#x27;2025-02-01T17:45+01:00&#x27;</span> },
+  ];
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {}
+}
+</code></pre>
+</li>
+<li>
+<p>Now, within the <code>BookingHistoryComponent</code>'s template, call your <code>DataTable</code>:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/customer/booking-history/booking-history.component.html --&gt;</span>
+[...]
+
+<span class="hljs-tag">&lt;<span class="hljs-name">app-data-table</span> [<span class="hljs-attr">data</span>]=<span class="hljs-string">&quot;flights&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;id&#x27;&quot;</span>&gt;</span>{{data}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;from&#x27;&quot;</span>&gt;</span>{{data}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;to&#x27;&quot;</span>&gt;</span>{{data}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">appTableField</span>=<span class="hljs-string">&quot;let data as &#x27;date&#x27;&quot;</span>&gt;</span>{{data | date:&#x27;dd.MM.yyyy HH:mm&#x27;}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-data-table</span>&gt;</span>
+</code></pre>
+</li>
+</ol>
+<h3 id="bonus-custom-templateoutletdirective-">Bonus: Custom TemplateOutletDirective ***</h3>
+<p>The TemplateOutletDirective used above leverages a more general low-level concept used by Angular: ViewContainers. They are a logical area representing an element's view. You can use it to insert components dynamically. The following implementation does this by implementing a custom version of the TemplateOutletDirective. Look at it and try to use it in your application:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { Directive, Input, OnInit, TemplateRef, ViewContainerRef } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Directive</span>({
+  selector: <span class="hljs-string">&#x27;[appCustomTemplateOutlet]&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> CustomTemplateOutletDirective <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-meta">@Input</span>(<span class="hljs-string">&#x27;appCustomTemplateOutlet&#x27;</span>) template: TemplateRef&lt;<span class="hljs-built_in">any</span>&gt; | <span class="hljs-literal">undefined</span>;
+  <span class="hljs-meta">@Input</span>(<span class="hljs-string">&#x27;appCustomTemplateOutletContext&#x27;</span>) context: <span class="hljs-built_in">any</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> viewContainer: ViewContainerRef</span>) {}
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.template) {
+      <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-built_in">this</span>.viewContainer.clear();
+
+    <span class="hljs-keyword">const</span> ref = <span class="hljs-built_in">this</span>.viewContainer.createEmbeddedView(<span class="hljs-built_in">this</span>.template, <span class="hljs-built_in">this</span>.context);
+    <span class="hljs-keyword">const</span> nativeElement = ref.rootNodes.pop();
+  }
+}
+</code></pre>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="copy.js"></script>
+    <script src="toggle.js"></script>
+    <script src="copy-diff.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Workshop by AngularArchitects.io</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="description" content="Description" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs/styles/atom-one-light.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="copy.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+
+  <body class="ready">
+    <!-- <nav class="app-nav no-badge">
+    </nav> -->
+
+    <!-- placeholder:cover-page -->
+
+    <main>
+      <button class="sidebar-toggle" aria-label="Menu">
+        <div class="sidebar-toggle-button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <aside class="sidebar">
+        <div class="sidebar-nav">
+          <p>&nbsp;</p>
+          <ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="slides.html">Slides</a></li>
+<li><a href="00_getting-started.html">Getting Started</a></li>
+<li><a href="01_components.html">Components Deep Dive</a></li>
+<li><a href="02_data-binding.html">Data Binding with OnPush</a></li>
+<li><a href="03_directives.html">Directives - Deep Dive</a></li>
+<li><a href="05_routing_advanced.html">Advanced Routing</a></li>
+<li><a href="06a_template-driven_forms.html">Template Driven Forms</a></li>
+<li><a href="06b_reactive_forms.html">Reactive Forms</a></li>
+</ul>
+
+        </div>
+      </aside>
+
+      <section class="content">
+        <article class="markdown-section" id="main">
+          <h1 id="data-binding-with-onpush">Data Binding with OnPush</h1>
+<ul>
+<li><a href="#data-binding-with-onpush">Data Binding with OnPush</a>
+<ul>
+<li><a href="#discovering-default-change-detection-behavior">Discovering Default Change Detection Behavior</a></li>
+<li><a href="#on-push-with-immutables">On-Push with Immutables</a></li>
+<li><a href="#on-push-with-observables-and-subjects">On-Push with Observables and Subjects</a></li>
+</ul>
+</li>
+</ul>
+<p>In this exercise, you will explore Angular's default change tracking behavior and the OnPush strategy. For this, you'll implement the flux pattern using Observables and Immutables.</p>
+<h2 id="discovering-default-change-detection-behavior">Discovering Default Change Detection Behavior</h2>
+<ol>
+<li>
+<p>Open the file <code>flight-search.component.ts</code> and discover the <code>FlightSearchComponent</code>.
+Have a look to the method <code>delay</code> which is bound to the button with the label <code>Delay 1st Flight</code>.</p>
+</li>
+<li>
+<p>Open the file <code>flight-card.component.ts</code> and add have a look to the <code>blink</code> method.</p>
+</li>
+<li>
+<p>Move to the file <code>flight-card.component.html</code> and create a data binding for this method at the end:</p>
+<pre><code>{{ blink() }}
+</code></pre>
+<p>Please note that binding methods is not a good idea with respect to performance. We do it here just to visualize the change tracker.</p>
+</li>
+<li>
+<p>Open the solution in the browser and search for flights form <code>Hamburg</code> to <code>Graz</code>.</p>
+</li>
+<li>
+<p>Click the button <code>Delay</code> and see that just the first flight gets a new date. But you also see that every component is checked for changes by Angular b/c every component blinks.</p>
+</li>
+</ol>
+<h2 id="on-push-with-immutables">On-Push with Immutables</h2>
+<ol>
+<li>
+<p>Open the file <code>flight-card.component.ts</code>. Switch on <code>OnPush</code> for your <code>FlightCard</code>.</p>
+<details>
+<summary>Show Code</summary>
+<p>
+<pre><code class="language-typescript">
+<span class="hljs-keyword">import</span> {ChangeDetectionStrategy} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+[...]
+<span class="hljs-meta">@Component</span>({
+    selector: <span class="hljs-string">&#x27;flight-card&#x27;</span>,
+    templateUrl: <span class="hljs-string">&#x27;flight-card.component.html&#x27;</span>,
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightCardComponent {
+    [...]
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Open the <code>flight.service.ts</code> and alter it to update the selected flight's date in an <em>immutable</em> way:</p>
+<details>
+<summary>Show Code</summary>
+<p>
+<pre><code class="language-typescript"><span class="hljs-comment">// libs/flight-lib/src/services/flight.service.ts</span>
+
+delay() {
+    <span class="hljs-keyword">const</span> ONE_MINUTE = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span>;
+
+    <span class="hljs-keyword">const</span> oldFlights = <span class="hljs-built_in">this</span>.flights;
+    <span class="hljs-keyword">const</span> oldFlight = oldFlights[<span class="hljs-number">0</span>];
+    <span class="hljs-keyword">const</span> oldDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldFlight.date);
+
+    <span class="hljs-comment">// Mutable</span>
+    <span class="hljs-comment">// oldDate.setTime(oldDate.getTime() + 15 * ONE_MINUTE );</span>
+    <span class="hljs-comment">// oldFlight.date = oldDate.toISOString();</span>
+
+    <span class="hljs-comment">// Immutable</span>
+    <span class="hljs-keyword">const</span> newDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDate.getTime() + <span class="hljs-number">15</span> * ONE_MINUTE);
+    <span class="hljs-keyword">const</span> newFlight: Flight = { ...oldFlight, date: newDate.toISOString() };
+    <span class="hljs-keyword">const</span> newFlights = [ newFlight, ...oldFlights.slice(<span class="hljs-number">1</span>) ]
+    <span class="hljs-built_in">this</span>.flights = newFlights;
+}
+</code></pre>
+</li>
+</ol>
+</p>
+</details>
+<p>You find some information about the object spread operator (e. g. <code>...oldFlight</code>) <a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-1.html">here</a> (scroll down to Object Spread) and about the array spread operator (e. g. [newFlight, ...oldFlights.slice(1)]) <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">here</a>.</p>
+<ol>
+<li>Make sure your implementation works. Switch to the browser and search for flights again. Click <code>Delay</code> one more time and find out that Angular is just checking and updating the first flight card.</li>
+</ol>
+<h2 id="on-push-with-observables-and-subjects">On-Push with Observables and Subjects</h2>
+<ol>
+<li>
+<p>Switch to the <code>flight-lib</code>. Open the file <code>flight.service.ts</code> and introduce the following two members:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightService {
+
+    [...]
+
+    <span class="hljs-keyword">private</span> flightsSubject = <span class="hljs-keyword">new</span> BehaviorSubject&lt;Flight[]&gt;([]);
+    <span class="hljs-keyword">readonly</span> flights$ = <span class="hljs-built_in">this</span>.flightsSubject.asObservable();
+
+    [...]
+}
+</code></pre>
+</li>
+<li>
+<p>Scroll down to the service's <code>load</code> method. Publish the fetched <code>flight</code> array with the <code>flightsSubject</code>.</p>
+<details>
+<summary>Show Code</summary>
+<p>
+<pre><code class="language-typescript">
+load(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">const</span> o = <span class="hljs-built_in">this</span>.find(<span class="hljs-keyword">from</span>, to)
+    .subscribe(
+        <span class="hljs-function"><span class="hljs-params">flights</span> =&gt;</span> {
+            <span class="hljs-built_in">this</span>.flights = flights;
+
+            <span class="hljs-comment">// Add this line:</span>
+            <span class="hljs-built_in">this</span>.flightsSubject.next(flights);
+
+        },
+        <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;Error loading flights&#x27;</span>, err)
+    );
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Scroll further down to the service's <code>delay</code> method. At the end of this method, publish the updated <code>flight</code> array with the subject.</p>
+<details>
+<summary>Show Code</summary>
+<p>
+<pre><code class="language-typescript">delay() {
+    [...]
+
+    <span class="hljs-built_in">this</span>.flightsSubject.next(newFlights);
+}
+
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Switch to the <code>flight-app</code>. Open to the file <code>flight-search.component.ts</code> and introduce a member <code>flights$</code>:</p>
+<pre><code class="language-javascript">flights$ = <span class="hljs-built_in">this</span>.flightService.flights$;
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>flight-search.component.html</code> and change the <code>*ngFor</code> loop so that it iterates over all flights provided by the <code>flights$</code> observable. For this, you have to use the <code>async</code> pipe:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let f of flights$ | async&quot;</span>&gt;</span>[...]<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Also, in this file, add the following *ngIf to the following div to &quot;unwrap&quot; the flights$ observable into a flights variable:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;form-group&quot;</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;flights$ | async as flights&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;search()&quot;</span> [<span class="hljs-attr">disabled</span>]=<span class="hljs-string">&quot;!from || !to&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span>&gt;</span>Search<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;flights.length &gt; 0&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;delay()&quot;</span>&gt;</span>Delay 1st Flight<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;flights.length &gt; 0&quot;</span>&gt;</span>{{flights.length}} flights found!<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Start your solution and make sure it works.</p>
+</li>
+</ol>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="copy.js"></script>
+    <script src="toggle.js"></script>
+    <script src="copy-diff.js"></script>
+
+  </body>
+</html>

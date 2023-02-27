@@ -1,0 +1,15 @@
+:root {
+  --theme-color: #de1542;
+}
+body {
+  overflow-y: scroll !important;
+}
+aside.sidebar {
+  position: fixed !important;
+}
+aside.sidebar[has-cover] {
+  position: absolute !important;
+}
+html {
+  scroll-behavior: smooth;
+}

@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Workshop by AngularArchitects.io</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="description" content="Description" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs/styles/atom-one-light.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="copy.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+
+  <body class="ready">
+    <!-- <nav class="app-nav no-badge">
+    </nav> -->
+
+    <!-- placeholder:cover-page -->
+
+    <main>
+      <button class="sidebar-toggle" aria-label="Menu">
+        <div class="sidebar-toggle-button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <aside class="sidebar">
+        <div class="sidebar-nav">
+          <p>&nbsp;</p>
+          <ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="slides.html">Slides</a></li>
+<li><a href="00_getting-started.html">Getting Started</a></li>
+<li><a href="01_components.html">Components Deep Dive</a></li>
+<li><a href="02_data-binding.html">Data Binding with OnPush</a></li>
+<li><a href="03_directives.html">Directives - Deep Dive</a></li>
+<li><a href="05_routing_advanced.html">Advanced Routing</a></li>
+<li><a href="06a_template-driven_forms.html">Template Driven Forms</a></li>
+<li><a href="06b_reactive_forms.html">Reactive Forms</a></li>
+</ul>
+
+        </div>
+      </aside>
+
+      <section class="content">
+        <article class="markdown-section" id="main">
+          <h1 id="advanced-routing">Advanced Routing</h1>
+<ul>
+<li><a href="#advanced-routing">Advanced Routing</a>
+<ul>
+<li><a href="#hierarchisches-routing">Hierarchisches Routing</a></li>
+<li><a href="#bonus-aux-routes-">Bonus: Aux-Routes *</a></li>
+<li><a href="#canactivateguard">CanActivateGuard</a></li>
+<li><a href="#candeactivateguard">CanDeactivateGuard</a></li>
+<li><a href="#bonus-login-">Bonus: Login **</a></li>
+<li><a href="#bonus-resolver-">Bonus: Resolver *</a></li>
+<li><a href="#bonus-loading-indicator-">Bonus: Loading Indicator *</a></li>
+<li><a href="#lazy-loading">Lazy Loading</a>
+<ul>
+<li><a href="#lazy-loading-konfigurieren">Lazy Loading konfigurieren</a></li>
+<li><a href="#preloading">Preloading</a></li>
+<li><a href="#problem-mit-shared-services-l%C3%B6sen">Problem mit Shared Services lösen</a></li>
+<li><a href="#bonus-eigene-preloading-strategy-">Bonus: Eigene Preloading Strategy **</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="hierarchisches-routing">Hierarchisches Routing</h2>
+<p>In dieser Übung werden Sie mit einer neuen Komponente <code>FlightBookingComponent</code> und hierarchischem Routing eine weitere Navigationsebene einführen:</p>
+<pre><code>AppComponent
+     +------------ HomeComponent
+     +------------ FlightBookingComponent
+                      +--------------------- FlightSearchComponent
+                      +--------------------- FlightEditComponent
+                      +--------------------- PassengerSearchComponent
+</code></pre>
+<p>Sie können sich dazu an der folgenden Anleitung anlehnen:</p>
+<ol>
+<li>
+<p>Betrachten Sie die <code>FlightBookingComponent</code> im Ordner <code>src/app/flight-booking</code>.</p>
+</li>
+<li>
+<p>Definieren Sie in der Datei <code>flight-booking.routes.ts</code> eine Route für die neue Komponente. Alle bisherigen Routen sollen zu ihren Child-Routen werden.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> FLIGHT_BOOKING_ROUTES: Routes = [
+  {
+    path: <span class="hljs-string">&#x27;flight-booking&#x27;</span>,
+    component: FlightBookingComponent,
+    children: [
+      {
+        path: <span class="hljs-string">&#x27;flight-search&#x27;</span>,
+        component: FlightSearchComponent
+      },
+      {
+        path: <span class="hljs-string">&#x27;passenger-search&#x27;</span>,
+        component: PassengerSearchComponent
+      },
+      {
+        path: <span class="hljs-string">&#x27;flight-edit/:id&#x27;</span>,
+        component: FlightEditComponent
+      }
+    ]
+  }
+
+];
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Wechseln Sie in die Datei <code>sidebar.component.html</code> und definieren Sie dort einen Hauptmenüpunkt für die Route <code>flight-booking/flight-search</code>. Die Route für <code>passenger-search</code> können Sie entfernen.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-HTML"><span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;nav&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">routerLink</span>=<span class="hljs-string">&quot;home&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;ti-home&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Home<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- New --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">routerLink</span>=<span class="hljs-string">&quot;flight-booking/flight-search&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;ti-arrow-top-right&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Flight Booking<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Old --&gt;</span>
+<span class="hljs-comment">&lt;!--
+
+&lt;li&gt;
+    &lt;a routerLink=&quot;flight-search&quot;&gt;
+        &lt;i class=&quot;ti-arrow-top-right&quot;&gt;&lt;/i&gt;
+        &lt;p&gt;Flight Search&lt;/p&gt;
+    &lt;/a&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+    &lt;a routerLink=&quot;passenger-search&quot;&gt;
+        &lt;i class=&quot;ti-user&quot;&gt;&lt;/i&gt;
+        &lt;p&gt;Passengers&lt;/p&gt;
+    &lt;/a&gt;
+&lt;/li&gt;
+--&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Wechseln Sie in die Datei <code>flight-card.component.html</code> und aktualisieren Sie dort den Link auf <code>flight-edit</code> auf <code>../flight-edit</code>.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-HTML"><span class="hljs-comment">&lt;!-- New --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span>
+	[<span class="hljs-attr">routerLink</span>]=<span class="hljs-string">&quot;[&#x27;../flight-edit&#x27;, item.id, {showDetails: true}]&quot;</span>&gt;</span>
+	Edit
+<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Old --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span>
+	[<span class="hljs-attr">routerLink</span>]=<span class="hljs-string">&quot;[&#x27;flight-edit&#x27;, item.id, {showDetails: true}]&quot;</span>&gt;</span>
+	Edit
+<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung.</p>
+</li>
+</ol>
+<h2 id="bonus-aux-routes-">Bonus: Aux-Routes *</h2>
+<p>In dieser Übung werden Sie eine neue BasketComponent erzeugen und diese über eine Aux-Route einblenden. Mit den Möglichkeiten von CSS können Sie sie als Popover darstellen.</p>
+<ol>
+<li>
+<p>Betrachten Sie die <code>BasketComponent</code> im Ordner <code>src/app</code>.</p>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>app.component.html</code> und fügen Sie ein weiteres <code>router-outlet</code> ein. Vergeben Sie den Namen <code>aux</code>.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-HTML"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;content&quot;</span>&gt;</span>
+
+  <span class="hljs-comment">&lt;!-- Existing outlet --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">router-outlet</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">router-outlet</span>&gt;</span>
+
+  <span class="hljs-comment">&lt;!-- New additional outlet --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">router-outlet</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;aux&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">router-outlet</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>app.routes.ts</code> und ergänzen Sie eine Route <code>basket</code>, die auf die neue <code>BasketComponent</code> verweist und dem neuen Outlet <code>aux</code> gewidtmet ist.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript">[...]
+  {
+    path: <span class="hljs-string">&#x27;basket&#x27;</span>,
+    component: BasketComponent,
+    outlet: <span class="hljs-string">&#x27;aux&#x27;</span>
+  },
+[...]
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>sidebar.component.html</code> und ergänzen Sie einen Menüeintrag, der die <code>BasketComponent</code> anzeigt.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-HTML"><span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">routerLinkActive</span>=<span class="hljs-string">&quot;active&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">a</span> [<span class="hljs-attr">routerLink</span>]=<span class="hljs-string">&quot;[{outlets: {aux: &#x27;basket&#x27; }}]&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;ti-shopping-cart&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Basket<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung.</p>
+</li>
+</ol>
+<h2 id="canactivateguard">CanActivateGuard</h2>
+<p>In dieser Übung erstellen Sie einen AuthService, mit dem sich Benutzer anmelden können. Dieser AuthService merkt sich den aktuellen Benutzernamen bzw. ob der Benutzer angemeldet ist. Die Möglichkeiten des Services sollen dem Benutzer in der <code>HomeComponent</code> angeboten werden.</p>
+<p>Zusätzlich erstellen Sie einen <code>CanActivate</code>-Guard mit dem Namen <code>AuthGuard</code>, der nur dann einen Routenwechsel zulässt, wenn der aktuelle Benutzer angemeldet ist. Hierzu stützt er sich auf den <code>AuthService</code> ab:</p>
+<pre><code>  [HomeComponent] -------&gt; [AuthService]
+                                 ^
+                                 |
+                            [AuthGuard]
+</code></pre>
+<p>Sie können sich dabei am folgenden Ablauf orientieren:</p>
+<ol>
+<li>
+<p>Erstellen Sie einen Ordner <code>auth</code> im Ordner <code>shared</code>.</p>
+</li>
+<li>
+<p>Erstellen Sie im neuen Ordner <code>auth</code> einen <code>AuthService</code>:</p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AuthService {
+
+    userName: <span class="hljs-built_in">string</span>;
+
+    <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) { }
+
+    login() {
+        <span class="hljs-built_in">this</span>.userName = <span class="hljs-string">&#x27;Max&#x27;</span>;
+    }
+
+    logout() {
+        <span class="hljs-built_in">this</span>.userName = <span class="hljs-literal">null</span>;
+    }
+
+}
+</code></pre>
+</li>
+<li>
+<p>Erstellen Sie im selben Ordner eine Datei <code>auth.guard.ts</code> mit einem <code>CanActivate</code>-Guard, der sich auf den <code>AuthService</code> stützt.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AuthGuard <span class="hljs-keyword">implements</span> CanActivate {
+
+    <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> router: Router, <span class="hljs-keyword">private</span> authService: AuthService</span>) { }
+
+    canActivate() {
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.authService.userName) {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        }
+        <span class="hljs-built_in">this</span>.router.navigate([<span class="hljs-string">&#x27;/home&#x27;</span>, { needsLogin: <span class="hljs-literal">true</span> }])
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }
+
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Registrieren Sie den <code>AuthGuard</code> und den <code>AuthService</code> in der Datei ``shared.module.ts`.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  [...]
+  providers: [
+    AuthService,
+	AuthGuard
+  ],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SharedModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Stellen Sie sicher, dass das <code>AppModule</code> (<code>app.module.ts</code>) das <code>SharedModule</code> importiert.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  imports: [
+ 	[...]
+    SharedModule
+  ],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>home.component.ts</code> und lassen Sie sich dort den <code>AuthService</code> injizieren. Wrappen Sie seine Funktionalität mit Methoden bzw. Setter.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> HomeComponent <span class="hljs-keyword">implements</span> OnInit {
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> authService: AuthService</span>) { }
+
+  ngOnInit() {
+  }
+
+  get userName() {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.authService.userName;
+  }
+
+  login() {
+    <span class="hljs-built_in">this</span>.authService.login();
+  }
+
+  logout() {
+    <span class="hljs-built_in">this</span>.authService.logout();
+  }
+
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>home.component.html</code>. Geben Sie dort den aktuellen Benutzernamen aus und bieten Sie Schaltflächen für das Login bzw. Logout an.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-HTML"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;userName&quot;</span>&gt;</span>Willkommen, {{userName}}<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">h1</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;!userName&quot;</span>&gt;</span>Willkommen!<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;card&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;content&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;login()&quot;</span>&gt;</span>Login<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;logout()&quot;</span>&gt;</span>Logout<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Registrieren Sie den <code>AuthGuard</code> bei der Routen-Konfiguration in <code>flight-booking.routes.ts</code>, um die eine der eingerichteten Routen zu schützen.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> FLIGHT_BOOKING_ROUTES: Routes = [
+  {
+    path: <span class="hljs-string">&#x27;...&#x27;</span>,
+    component: [...],
+    canActivate:[AuthGuard],
+    [...]
+	}
+	[...]
+];
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung.</p>
+</li>
+</ol>
+<h2 id="candeactivateguard">CanDeactivateGuard</h2>
+<p>In dieser Übung entwickeln Sie einen <code>CanDeactivate</code>-Guard um den Benutzer vor dem Verlassen einer Route zu warnen.</p>
+<ol>
+<li>
+<p>Erzeugen Sie im Ordner <code>shared</code> einen Ordner <code>deactivation</code>.</p>
+</li>
+<li>
+<p>Erzeugen Sie im neuen Ordner <code>deactivation</code> eine Datei <code>can-deactivate.guard</code>:</p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> CanDeactivateComponent {
+  canDeactivate(): Observable&lt;<span class="hljs-built_in">boolean</span>&gt;;
+}
+
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> CanDeactivateGuard <span class="hljs-keyword">implements</span> CanDeactivate&lt;CanDeactivateComponent&gt; {
+
+  canDeactivate(
+    component: CanDeactivateComponent,
+    currentRoute: ActivatedRouteSnapshot,
+    currentState: RouterStateSnapshot,
+    nextState?: RouterStateSnapshot): Observable&lt;<span class="hljs-built_in">boolean</span>&gt; {
+
+    <span class="hljs-keyword">return</span> component.canDeactivate();
+
+  }
+
+}
+</code></pre>
+<p>Das Interface <code>CanDeactivateComponent</code> kommt hier als Abstraktion für die Komponenten, die mit dem Guard zu nutzen sind, zum Einsatz.</p>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>flight-edit.component.ts</code> und implementieren Sie dort das Interface <code>CanDeactivateComponent</code>, sodass beim verlassen zum einen ein Flag gesetzt wird und zum anderen ein <code>Observable&lt;boolean&gt; </code> zurückgeliefert wird. Das Flag dazu führen, dass eine Warnmeldung angezeigt wird. Sobald der Benutzer bekannt gegeben hat, ob wir die Route wirklich verlassen möchte, soll über das Observable <code>true</code> bzw. <code>false</code> an den Router gesendet werden. Danach muss es geschlossen werden. Zusätzlich soll danach das Flag wieder zurückgesetzt werden.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightEditComponent <span class="hljs-keyword">implements</span> OnInit, CanDeactivateComponent {
+
+  [...]
+
+  sender: Observer&lt;<span class="hljs-built_in">boolean</span>&gt;;
+  showWarning = <span class="hljs-literal">false</span>;
+
+  decide(decision: <span class="hljs-built_in">boolean</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.showWarning = <span class="hljs-literal">false</span>;
+    <span class="hljs-built_in">this</span>.sender.next(decision);
+    <span class="hljs-built_in">this</span>.sender.complete();
+  }
+
+  canDeactivate(): Observable&lt;<span class="hljs-built_in">boolean</span>&gt; {
+    <span class="hljs-keyword">return</span> Observable.create(<span class="hljs-function">(<span class="hljs-params">sender: Observer&lt;<span class="hljs-built_in">boolean</span>&gt;</span>) =&gt;</span> {
+      <span class="hljs-built_in">this</span>.sender = sender;
+      <span class="hljs-built_in">this</span>.showWarning = <span class="hljs-literal">true</span>;
+    });
+
+  }
+
+  [...]
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Erweitern Sie die Datei <code>flight-edit.component.html</code> um die zuvor erwähte Warnung mit den beiden Wahrmöglichkeiten für den Benutzer.</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;showWarning&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;alert alert-warning&quot;</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;z-index: 99999;&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Data not saved. Do you really want to leave me?<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;decide(true)&quot;</span>&gt;</span>Yes<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;btn btn-default&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;decide(false)&quot;</span>&gt;</span>No<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Registrieren Sie den Guard in der Datei <code>shared.module.ts</code>.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  [...]
+  providers: [
+    [...],
+    CanDeactivateGuard
+  ],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SharedModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Registrieren Sie den Guard auch in der Datei <code>flight-booking.routes.ts</code>:</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript">[...]
+{
+	path: <span class="hljs-string">&#x27;flight-edit/:id&#x27;</span>,
+	component: FlightEditComponent,
+	canDeactivate: [CanDeactivateGuard]
+},
+[...]
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung.</p>
+</li>
+</ol>
+<h2 id="bonus-login-">Bonus: Login **</h2>
+<p>Erweitern Sie den <code>AuthService</code>, sodass er unter Verwendung hartcodierter Daten prüft, ob eine bestimmte Benutzername/Passwort-Kombination existiert. Nutzen Sie diesen Service in der Methode <code>login</code> des <code>AuthService</code>. Erweitern Sie die Login-Maske, sodass der Benutzer hier Benutzername und Passwort erfassen kann. Falls Sie <code>ngModel</code> verwenden, stellen Sie sicher, dass das <code>FormsMoudle</code> ins <code>AppModule</code> importiert wird.</p>
+<h2 id="bonus-resolver-">Bonus: Resolver *</h2>
+<p>In dieser Übung werden Sie einen Resolver schreiben, der einen Flug anhand der Id in der Url für die <code>FlightEditComponent</code> lädt. Dazu werden Sie auch den FlightService um eine Methode <code>findById</code> erweitern.</p>
+<p>Sie können sich dabei am folgenden Ablauf orientieren:</p>
+<ol>
+<li>
+<p>Erweitern Sie den <code>FlightService</code> (<code>flight.service.ts</code>) um eine Methode <code>findById</code>, die anhand einer übergebenen Id einen Flug als <code>Observable&lt;Flight&gt;</code> liefert.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript">findById(id: <span class="hljs-built_in">string</span>): Observable&lt;Flight&gt; {
+  <span class="hljs-keyword">let</span> url = <span class="hljs-string">&#x27;http://www.angular.at/api/flight&#x27;</span>;
+  <span class="hljs-keyword">let</span> params = <span class="hljs-keyword">new</span> HttpParams().set(<span class="hljs-string">&#x27;id&#x27;</span>, id);
+  <span class="hljs-keyword">let</span> headers = <span class="hljs-keyword">new</span> HttpHeaders().set(<span class="hljs-string">&#x27;Accept&#x27;</span>, <span class="hljs-string">&#x27;application/json&#x27;</span>);
+
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.http.get&lt;Flight&gt;(url, {params, headers});
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Erstellen Sie im Ordner <code>src/app/flight-booking/flight-search</code> eine Datei <code>flight.resolver.ts</code>, die die Id aus der Url entnimmt und mit dem <code>FlightService</code> den gewünschten Flug lädt.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightResolver <span class="hljs-keyword">implements</span> Resolve&lt;Flight&gt; {
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> flightService: FlightService</span>) {
+  }
+
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable&lt;Flight&gt;  {
+    <span class="hljs-keyword">let</span> id = route.params[<span class="hljs-string">&#x27;id&#x27;</span>];
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.flightService.findById(id);
+  }
+
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Registrieren Sie den <code>FlightResolver</code> in der Datei <code>flight-booking.module.ts</code>.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+	[...]
+	providers: [
+    	FlightResolver,
+		[...]
+	],
+	[...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightBookingModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Hinterlegen Sie den <code>FlightResolver</code> in der Datei <code>flight-booking.routes.ts</code> bei der Route <code>flight-edit</code>.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript">[...]
+{
+  path: <span class="hljs-string">&#x27;flight-edit/:id&#x27;</span>,
+  component: FlightEditComponent,
+  canDeactivate: [CanDeactivateGuard],
+  resolve: {
+    flight: FlightResolver
+  }
+}
+[...]
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Ändern Sie die Datei <code>flight-edit.component.ts</code>, sodass der vom Resolver geladene Flug entgegengenommen wird.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightEditComponent <span class="hljs-keyword">implements</span> OnInit, CanDeactivateComponent {
+
+
+  [...]
+  flight: Flight;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">
+    <span class="hljs-keyword">private</span> route: ActivatedRoute</span>) { }
+
+  ngOnInit() {
+    <span class="hljs-built_in">this</span>.route.params.subscribe(<span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> {
+      <span class="hljs-built_in">this</span>.id = p[<span class="hljs-string">&#x27;id&#x27;</span>];
+      <span class="hljs-built_in">this</span>.showDetails = p[<span class="hljs-string">&#x27;showDetails&#x27;</span>];
+    });
+
+    <span class="hljs-built_in">this</span>.route.data.subscribe(<span class="hljs-function"><span class="hljs-params">data</span> =&gt;</span> {
+      <span class="hljs-built_in">this</span>.flight = data[<span class="hljs-string">&#x27;flight&#x27;</span>];
+    });
+  }
+
+  [...]
+
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Geben Sie im Template der <code>FlightEditComponent</code> (<code>flight-edit.component.ts</code>) die Eigenschaft <code>flight</code> aus:</p>
+<pre><code class="language-HTML"><span class="hljs-tag">&lt;<span class="hljs-name">pre</span>&gt;</span>{{flight | json}}<span class="hljs-tag">&lt;/<span class="hljs-name">pre</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung.</p>
+</li>
+</ol>
+<h2 id="bonus-loading-indicator-">Bonus: Loading Indicator *</h2>
+<p>Diese Übung setzt voraus, dass Sie in der vorherigen Übung einen <code>FlightResolver</code> umgesetzt haben.</p>
+<ol>
+<li>
+<p>Lassen Sie sich in der Datei <code>app.component.ts</code> den <code>Router</code> injizieren und nutzen Sie seine Events um zu ermitteln, ob ein Loading Indicator anzuzeigen ist:</p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppComponent  {
+
+  showLoadingIndicator: <span class="hljs-built_in">boolean</span> = <span class="hljs-literal">false</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> router: Router</span>) {
+
+    router.events.pipe(filter(
+                   <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> e <span class="hljs-keyword">instanceof</span> NavigationStart
+                        || e <span class="hljs-keyword">instanceof</span> GuardsCheckEnd))
+          .subscribe(<span class="hljs-function"><span class="hljs-params">event</span> =&gt;</span> {
+                 <span class="hljs-built_in">this</span>.showLoadingIndicator = <span class="hljs-literal">true</span>;
+          });
+
+    router.events.pipe(filter(
+                   <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> e <span class="hljs-keyword">instanceof</span> NavigationEnd
+                        || e <span class="hljs-keyword">instanceof</span>  NavigationError
+                        || e <span class="hljs-keyword">instanceof</span> NavigationCancel
+                        || e <span class="hljs-keyword">instanceof</span> GuardsCheckStart ))
+          .subscribe(<span class="hljs-function"><span class="hljs-params">event</span> =&gt;</span> {
+                 <span class="hljs-built_in">this</span>.showLoadingIndicator = <span class="hljs-literal">false</span>;
+          });
+
+   }
+}
+
+</code></pre>
+</li>
+<li>
+<p>Fügen Sie am Ende der <code>app.component.html</code> einen Loading Indicator ein:</p>
+<pre><code class="language-HTML"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;z-index: 50&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;loading-indicator&quot;</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;showLoadingIndicator&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;spinner&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;double-bounce1&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;double-bounce2&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<p>Das Projekt beinahaltet bereits Styles für diese Klassen, sodass der Loading Indicator animiert dargestellt wird.</p>
+</li>
+<li>
+<p>Fügen Sie zum Testen des Loading Indicators in der Datei <code>flight.resolver.ts</code> einen Dalay ein:</p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightResolver <span class="hljs-keyword">implements</span> Resolve&lt;Flight&gt; {
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> flightService: FlightService</span>) {
+  }
+
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable&lt;Flight&gt;  {
+    <span class="hljs-keyword">let</span> id = route.params[<span class="hljs-string">&#x27;id&#x27;</span>];
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.flightService.findById(id).pipe(delay(<span class="hljs-number">3000</span>)); <span class="hljs-comment">// &lt;-- delay!</span>
+  }
+
+}
+</code></pre>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung und stellen Sie fest, dass beim Abrufen der <code>FlightEditComponent</code> der Loading Indicator erscheint.</p>
+</li>
+<li>
+<p>Entfernen Sie das <code>Delay</code> wieder aus der Datei <code>flight.resolver.ts</code>.</p>
+</li>
+</ol>
+<h2 id="lazy-loading">Lazy Loading</h2>
+<h3 id="lazy-loading-konfigurieren">Lazy Loading konfigurieren</h3>
+<p>In diesem Teil der Übung werden Sie das <code>FlightBookingModule</code> per Lazy Loading laden.</p>
+<ol>
+<li>
+<p>Ergänzen Sie die Datei <code>app.routes.ts</code> um eine weitere Route, die das <code>FlightBookingModule</code> via Lazy Loading lädt.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> APP_ROUTES: Routes = [
+  {
+    path: <span class="hljs-string">&#x27;&#x27;</span>,
+    redirectTo: <span class="hljs-string">&#x27;home&#x27;</span>,
+    pathMatch: <span class="hljs-string">&#x27;full&#x27;</span>
+  },
+  {
+    path: <span class="hljs-string">&#x27;home&#x27;</span>,
+    component: HomeComponent
+  },
+  {
+    path: <span class="hljs-string">&#x27;flight-booking&#x27;</span>,
+    loadChildren: <span class="hljs-function">() =&gt;</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;./flight-booking/flight-booking.module&#x27;</span>)
+                            .then(<span class="hljs-function"><span class="hljs-params">esm</span> =&gt;</span> esm.FlightBookingModule),
+    data: {
+      preload: <span class="hljs-literal">true</span>
+    }
+  },
+  [...],
+  {
+    path: <span class="hljs-string">&#x27;**&#x27;</span>, <span class="hljs-comment">// &lt;-- Catch-All-Route muss die letzte Route sein!</span>
+    [...]
+  }
+]
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>flight-booking.routes.ts</code> und setzen Sie den Pfad für die <code>FlightBookingComponent</code> auf einen Leerstring. Entfernen Sie auch alle Verweise auf <code>AuthGuards</code>. Diese machen vorerst Probleme. Die Lösung dazu wird weiter unten in einer eigenen Übung beschrieben.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> FLIGHT_BOOKING_ROUTES: Routes = [
+	{
+    	<span class="hljs-comment">// path: &#x27;flight-booking&#x27;, // &lt;-- Before</span>
+		path: <span class="hljs-string">&#x27;&#x27;</span>, <span class="hljs-comment">// &lt;-- Now</span>
+	    component: FlightBookingComponent,
+	    <span class="hljs-comment">// canActivate:[AuthGuard], // &lt;-- Remove all AuthGuards (for now)</span>
+		[...]
+	}
+	[...]
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>app.module.ts</code> und stellen Sie sicher, dass das <code>FlightBookingModule</code> hier nicht mehr importiert wird.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+	imports: [
+		BrowserModule,
+		HttpClientModule,
+		<span class="hljs-comment">// FlightBookingModule,	// &lt;-- This would prevent lazy loading</span>
+		RouterModule.forRoot(APP_ROUTES),
+		[...]
+	],
+	[...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</p>
+</details>
+<p>Eine Referenz auf das <code>FlightBookingModule</code> würde dazu führen, dass es im Hauptbundle landet und das würde wiederum Lazy Loading verhindern.</p>
+</li>
+<li>
+<p>Betrachten Sie die Ausgaben der Angular CLI und stellen Sie fest, dass diese nun ein Bundle <code>flight-booking.module.chunk.js</code> generiert hat.</p>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung im Browser. Wechseln Sie auf das Registerblatt <code>Network</code> in den Dev Tools (F12) und vergewissern Sie sich, dass das Modul erst bei Bedarf geladen wird.</p>
+</li>
+</ol>
+<h3 id="preloading">Preloading</h3>
+<ol>
+<li>
+<p>Öffnen Sie die Datei <code>app.module.ts</code> und geben Sie beim Aufruf von <code>RouterModule.forRoot</code> die Preloading Strategie <code>PreloadAllModules</code> an.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  imports: [
+	[...]
+	RouterModule.forRoot(
+      APP_ROUTES,
+      {
+        preloadingStrategy: PreloadAllModules
+      }),
+    [...]
+  ],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Wechseln Sie im Browser in das Registerblatt <code>Network</code> der Developer Tools und vergewissern Sie sich, dass das <code>FlightBookingModule</code> per Lazy Loading unmittelbar nach den Anwendungsstart geladen wird.</p>
+</li>
+</ol>
+<h3 id="problem-mit-shared-services-losen">Problem mit Shared Services lösen</h3>
+<p>In dieser Übung werden Sie Ihr <code>SharedModule</code> über eine statische Methode <code>forRoot</code> mit Services und mit einer statischen Methode <code>forChild</code> ohne Services anbieten. Dadurch, dass sie forRoot <strong>nur</strong> beim <code>AppModule</code> verwenden, stellen Sie sicher, dass es nur einen einzigen globalen AuthService gibt. Somit können Sie im per Lazy Loading geladenen Module auf den aktuellen Benutzernamen zugreifen und den oben beschriebenen <code>AuthGuard</code> wieder aktivieren.</p>
+<ol>
+<li>
+<p>Geben Sie in der <code>PassengerSearchComponent</code> den aktuellen Benutzernamen aus:</p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerSearchComponent <span class="hljs-keyword">implements</span> OnInit {
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> authService: AuthService</span>) { }
+
+  ngOnInit() {
+    <span class="hljs-built_in">console</span>.debug(<span class="hljs-string">&#x27;userName&#x27;</span>, <span class="hljs-built_in">this</span>.authService.userName);
+  }
+
+}
+</code></pre>
+</li>
+<li>
+<p>Starten Sie die Anwendung und melden Sie sich an. Stellen Sie fest, dass nach dem Anmelden der Benutzername ausgegeben wird.</p>
+</li>
+<li>
+<p>Wechseln Sie zur Passagiersuche und stellen Sie fest, dass nun auf der JavaScript-Konsole anstatt des Benutzernames lediglich <code>undefined</code> ausgegeben wird.</p>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>shared.module.ts</code>. Führen Sie eine statische Methode <code>forRoot</code> und eine statische Methode <code>forChild</code> ein und stellen Sie sicher, dass nur <code>forRoot</code> die Provider ausliefert.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  imports: [
+    [...]
+  ],
+  declarations: [
+    [...]
+  ],
+  providers: [ <span class="hljs-comment">/* Keine Provider hier, siehe forRoot */</span> ],
+  <span class="hljs-built_in">exports</span>: [
+    [...]
+  ]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SharedModule {
+
+  <span class="hljs-keyword">static</span> forChild(): ModuleWithProviders&lt;SharedModule&gt; {
+    <span class="hljs-keyword">return</span> {
+      ngModule: SharedModule,
+      providers: [ <span class="hljs-comment">/* Keine Provider hier, siehe forRoot */</span> ]
+    }
+  }
+
+  <span class="hljs-keyword">static</span> forRoot(): ModuleWithProviders&lt;SharedModule&gt; {
+    <span class="hljs-keyword">return</span> {
+      ngModule: SharedModule,
+      providers: [
+        AuthService,
+        [...] <span class="hljs-comment">// Eventuelle andere Services hier</span>
+      ]
+    }
+  }
+
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Stellen Sie sicher, dass in der <code>app.module.ts</code> das <code>SharedModule</code> mittels <code>forRoot</code> importiert wird.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  	imports: [
+		[...]
+		SharedModule.forRoot()
+  	],
+	[...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Stellen Sie auch sicher, dass in der Datei <code>flight.booking.module.ts</code> das <code>SharedModule</code> mittels <code>forChild</code> importiert wird.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  	imports: [
+		[...]
+		SharedModule.forChild()
+  	],
+	[...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightBookingModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie die Anwendung und vergewissern Sie sich, dass nun die <code>PassengerSearchComponent</code> den richtigen Benutzernamen auf die JavaScript-Konsole schreibt.</p>
+</li>
+<li>
+<p>Falls Sie weiter oben einen <code>AuthGuard</code> geschrieben haben, können Sie diesen nun (wieder) in der Datei <code>flight-booking.routes.ts</code> aktivieren.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> FLIGHT_BOOKING_ROUTES: Routes = [
+	{
+		path: <span class="hljs-string">&#x27;&#x27;</span>, <span class="hljs-comment">// &lt;-- Now</span>
+	    component: FlightBookingComponent,
+	    canActivate:[AuthGuard], <span class="hljs-comment">// &lt;-- Add AuthGuard</span>
+		[...]
+	}
+	[...]
+}
+</code></pre>
+</p>
+</details>
+</li>
+</ol>
+<h3 id="bonus-eigene-preloading-strategy-">Bonus: Eigene Preloading Strategy **</h3>
+<p>In diesem Teil der Übung werden Sie eine eigene <code>PreloadingStrategy</code> implementieren, die nur bestimmte, über das <code>data</code>-Attribut markierte Routen vorlädt. Dazu werden Sie jene Routen, die es vorzuladen gilt, in der Routen-Konfiguration mit einem Boolean markieren.</p>
+<ol>
+<li>
+<p>Erstellen Sie im Ordner <code>shared</code> einen Ordner <code>preloadig</code>.</p>
+</li>
+<li>
+<p>Erstellen Sie im neuen Ordner <code>preloading</code> eine Datei <code>custom-preloading-strategy.ts</code>, die die oben erwähnte Aufgabe umsetzt.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> CustomPreloadingStrategy <span class="hljs-keyword">implements</span> PreloadingStrategy {
+
+  preload(route: Route, fn: <span class="hljs-function">() =&gt;</span> Observable&lt;<span class="hljs-built_in">any</span>&gt;): Observable&lt;<span class="hljs-built_in">any</span>&gt; {
+
+    <span class="hljs-keyword">if</span> (route.data &amp;&amp; route.data.preload) {
+      <span class="hljs-keyword">return</span> fn();
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">of</span>(<span class="hljs-literal">null</span>);
+
+  }
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Registrieren Sie die <code>CustomPreloadingStrategy</code> im Rahmen eines Providers in der Datei <code>shared.module.ts</code>.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+	[...]
+	providers: [
+		[...]
+		CustomPreloadingStrategy
+		[...]
+  	],
+  	[...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SharedModule {
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Hinterlegen Sie in der Datei <code>app.routes.ts</code> für die Route <code>flight-booking</code> in der Eigenschaft <code>data</code>, dass die Route vorgeladen weden soll.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript">{
+  path: <span class="hljs-string">&#x27;flight-booking&#x27;</span>,
+  loadChildren: <span class="hljs-function">() =&gt;</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;./flight-booking/flight-booking.module&#x27;</span>)
+                            .then(<span class="hljs-function"><span class="hljs-params">esm</span> =&gt;</span> esm.FlightBookingModule),
+  data: {
+    preload: <span class="hljs-literal">true</span>
+  }
+},
+[...]
+{
+	path: <span class="hljs-string">&#x27;**&#x27;</span>,			<span class="hljs-comment">// Diese Route muss die letzte sein!</span>
+	redirectTo: <span class="hljs-string">&#x27;home&#x27;</span>
+}
+</code></pre>
+</p>
+</details>
+<p>Hinweis: Über die Eigenschaft <code>data</code> können Sie beliebige Zusatzinformationen für eine Route hinterlegen.</p>
+</li>
+<li>
+<p>Öffnen Sie die Datei <code>app.module.ts</code> und übergeben Sie die neue <code>CustomPreloadingStrategy</code> an <code>forRoot</code>:</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-meta">@NgModule</span>({
+  imports: [
+	[...]
+	RouterModule.forRoot(
+      APP_ROUTES,
+      {
+        preloadingStrategy: CustomPreloadingStrategy
+      }),
+    [...]
+  ],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung und stellen Sie unter Verwendung des Registerblatts <code>Network</code> in den Dev Tools fest, dass Preloading stattfindet.</p>
+</li>
+<li>
+<p>Ändern Sie in der Datei <code>app.routes.ts</code> und geben Sie im data-Attribut an, dass <code>flight-booking</code> nicht mehr vorgeladen werden soll.</p>
+<details>
+<summary>Code anzeigen</summary>
+<p>
+<pre><code class="language-TypeScript">{
+  path: <span class="hljs-string">&#x27;flight-booking&#x27;</span>,
+  loadChildren: <span class="hljs-function">() =&gt;</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;./flight-booking/flight-booking.module&#x27;</span>)
+                            .then(<span class="hljs-function"><span class="hljs-params">esm</span> =&gt;</span> esm.FlightBookingModule),
+  data: {
+    preload: <span class="hljs-literal">false</span>
+  }
+},
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Testen Sie Ihre Lösung erneut und stellen Sie fest, dass nun kein Preloading mehr stattfindet.</p>
+</li>
+</ol>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="copy.js"></script>
+    <script src="toggle.js"></script>
+    <script src="copy-diff.js"></script>
+
+  </body>
+</html>

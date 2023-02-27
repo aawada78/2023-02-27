@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Workshop by AngularArchitects.io</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="description" content="Description" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs/styles/atom-one-light.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="copy.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+
+  <body class="ready">
+    <!-- <nav class="app-nav no-badge">
+    </nav> -->
+
+    <!-- placeholder:cover-page -->
+
+    <main>
+      <button class="sidebar-toggle" aria-label="Menu">
+        <div class="sidebar-toggle-button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <aside class="sidebar">
+        <div class="sidebar-nav">
+          <p>&nbsp;</p>
+          <ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="slides.html">Slides</a></li>
+<li><a href="00_getting-started.html">Getting Started</a></li>
+<li><a href="01_components.html">Components Deep Dive</a></li>
+<li><a href="02_data-binding.html">Data Binding with OnPush</a></li>
+<li><a href="03_directives.html">Directives - Deep Dive</a></li>
+<li><a href="05_routing_advanced.html">Advanced Routing</a></li>
+<li><a href="06a_template-driven_forms.html">Template Driven Forms</a></li>
+<li><a href="06b_reactive_forms.html">Reactive Forms</a></li>
+</ul>
+
+        </div>
+      </aside>
+
+      <section class="content">
+        <article class="markdown-section" id="main">
+          <h1 id="components-deep-dive">Components Deep Dive</h1>
+<ul>
+<li><a href="#components-deep-dive">Components Deep Dive</a>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#content-and-view">Content and View</a>
+<ul>
+<li><a href="#content-projection">Content Projection</a></li>
+<li><a href="#referencing-the-parent-component">Referencing the Parent Component</a></li>
+<li><a href="#interacting-with-a-components-content">Interacting with a Component's Content</a></li>
+<li><a href="#interacting-with-a-components-view">Interacting with a Component's View</a>
+<ul>
+<li><a href="#creating-a-tabnavigatorcomponent">Creating a TabNavigatorComponent</a></li>
+<li><a href="#using-template-variables">Using Template Variables</a></li>
+<li><a href="#bonus-directly-accessing-a-viewchild-">Bonus: Directly Accessing a ViewChild *</a></li>
+<li><a href="#bonus-communicating-via-services-">Bonus: Communicating via Services *</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<!--
+TODO: Diesen Abschnitt eventuell ins Starterkit verschieben?
+-->
+<p>For this lab, we are ausin a new <code>CustomerModule</code> with a <code>BookingHistoryComponent</code>. This part of the lab shows how to create them.</p>
+<ol>
+<li>
+<p>Create a new <code>CustomerModule</code>:</p>
+<pre><code>ng g module customer
+</code></pre>
+</li>
+<li>
+<p>Create a new <code>BookingHistoryComponent</code>:</p>
+<pre><code>ng g c customer/booking-history
+</code></pre>
+</li>
+<li>
+<p>Add a file <code>customer.routes.ts</code> with a routing configuration for the new module:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/customer/customer.routes.ts</span>
+
+<span class="hljs-keyword">import</span> { Routes } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/router&#x27;</span>;
+<span class="hljs-keyword">import</span> { BookingHistoryComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./booking-history/booking-history.component&#x27;</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> CUSTOMER_ROUTES: Routes = [
+  {
+    path: <span class="hljs-string">&#x27;customer/booking-history&#x27;</span>,
+    component: BookingHistoryComponent,
+  },
+];
+</code></pre>
+</li>
+<li>
+<p>Import both, the existing <code>SharedModule</code> as well as the <code>RouterModule</code> into the new <code>CustomerModule</code>. Also, pass your routing config to the <code>RouterModule</code>'s <code>forChild</code>-Method.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/customer/customer.module.ts</span>
+
+<span class="hljs-keyword">import</span> { NgModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { CommonModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/common&#x27;</span>;
+<span class="hljs-keyword">import</span> { BookingComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./booking/booking.component&#x27;</span>;
+
+<span class="hljs-comment">// Importe hinzufügen:</span>
+<span class="hljs-keyword">import</span> { RouterModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/router&#x27;</span>;
+<span class="hljs-keyword">import</span> { CUSTOMER_ROUTES } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./customer.routes&#x27;</span>;
+<span class="hljs-keyword">import</span> { SharedModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../shared/shared.module&#x27;</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+  imports: [
+    CommonModule,
+    <span class="hljs-comment">// Add SharedModule:</span>
+    SharedModule,
+    <span class="hljs-comment">// Add RouterModule + Routing Confi:</span>
+    RouterModule.forChild(CUSTOMER_ROUTES),
+  ],
+  declarations: [BookingHistoryComponent],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> CustomerModule {}
+</code></pre>
+<p>Please note that we have changed the order of <em>imports</em> and <em>declarations</em> compared to the generated.</p>
+</li>
+<li>
+<p>Import the <em>CustomerModule</em> into the <em>AppModule</em>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/app.module.ts</span>
+
+[...]
+<span class="hljs-comment">// Import hinzufügen:</span>
+<span class="hljs-keyword">import</span> { CustomerModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./customer/customer.module&#x27;</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+  imports: [
+      [...]
+      <span class="hljs-comment">// Modul registrieren:</span>
+      CustomerModule
+  ],
+  declarations: [
+      [...]
+  ],
+  providers: [],
+  bootstrap: [
+      AppComponent
+  ]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</li>
+<li>
+<p>Add a menu item to your <em>SidebarComponent</em>:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/sidebar/sidebar.component.html --&gt;</span>
+
+[...]
+
+<span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">routerLinkActive</span>=<span class="hljs-string">&quot;active&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">routerLink</span>=<span class="hljs-string">&quot;customer/booking-history&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Booking History<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+[...]
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and try it out.</p>
+</li>
+</ol>
+<h2 id="content-and-view">Content and View</h2>
+<p>In this part of the lab, you will implement a tabbed pane. We use it to demonstrate advanced possibilities of Angular.</p>
+<h3 id="content-projection">Content Projection</h3>
+<ol>
+<li>
+<p>Add a <code>TabbedPaneComponent</code> and a <code>TabComponent</code>:</p>
+<pre><code>ng g c shared/controls/tabbed-pane --export
+ng g c shared/controls/tab --export
+</code></pre>
+</li>
+<li>
+<p>Please make sure that the <em>SharedModule</em> is both declared and exported as the <em>SharedModule</em>.</p>
+</li>
+<li>
+<p>Open the generated <code>tab.component.ts</code> file and add a <code>title</code> and a <code>visible</code> property:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tab/tab.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, Input, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tab&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tab.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tab.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabComponent <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-meta">@Input</span>() title = <span class="hljs-string">&#x27;&#x27;</span>;
+  visible = <span class="hljs-literal">true</span>;
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {}
+}
+</code></pre>
+</li>
+<li>
+<p>Open the generated <code>tab.component.html</code> file and modify it as follow:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/tab/tab.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;visible&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>{{title}}<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ng-content</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ng-content</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<p>Please note that the <code>ng-content</code> element marks the destination for content projection.</p>
+</li>
+<li>
+<p>Try out your TabComponent. For this, switch to the file <code>booking-history.component.html</code> and call it three times:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/customer/booking-history/booking-history.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Booking History<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Upcoming Flights&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No upcoming flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Operated Flights&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No operated flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Cancelled Flights&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No cancelled flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and assure yourself that the three tabs are displayed <strong>one after the other</strong> including the projected content.</p>
+<p>In the <strong>next section</strong>, we will group them using our <code>TabbedPaneComponent</code>. Also, we will make sure that only one tab is displayed at one time.</p>
+</li>
+</ol>
+<h3 id="referencing-the-parent-component">Referencing the Parent Component</h3>
+<p>The goal of this lab is to group the tabs with a tabbed-pane. Also, the tabbed-pane shall make sure that only one tab is displayed at a time and display links for switching between them:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">app-tabbed-pane</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Upcoming Flights&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No upcoming flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Operated Flights&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No operated flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Cancelled Flights&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No cancelled flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-tabbed-pane</span>&gt;</span>
+</code></pre>
+<ol>
+<li>
+<p>Open the file <code>tabbed-pane.component.ts</code> and extend it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.component.ts</span>
+
+<span class="hljs-keyword">import</span> { AfterContentInit, Component, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { TabComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tab/tab.component&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tabbed-pane&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tabbed-pane.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tabbed-pane.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabbedPaneComponent <span class="hljs-keyword">implements</span> OnInit, AfterContentInit {
+  tabs: <span class="hljs-built_in">Array</span>&lt;TabComponent&gt; = [];
+  activeTab: TabComponent | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
+
+  ngAfterContentInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.tabs.length &gt; <span class="hljs-number">0</span>) {
+      <span class="hljs-built_in">this</span>.activate(<span class="hljs-built_in">this</span>.tabs[<span class="hljs-number">0</span>]);
+    }
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {}
+
+  register(tab: TabComponent): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.tabs.push(tab);
+  }
+
+  activate(active: TabComponent): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tab <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.tabs) {
+      tab.visible = tab === active;
+    }
+    <span class="hljs-built_in">this</span>.activeTab = active;
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Also, open the component's template (<code>tabbed-pane.component.html</code>) and display a link for each managed <code>TabComponent</code> in the <code>tabs</code> array:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/tabbed-pane/tabbed-pane.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tabbed-pane&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;navigation&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let tab of tabs&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tab-link&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">a</span> [<span class="hljs-attr">ngClass</span>]=<span class="hljs-string">&quot;{active: tab == activeTab}&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;activate(tab)&quot;</span>&gt;</span>{{tab.title}}<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">ng-content</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ng-content</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>You can use the following CSS rules in the file <code>tabbed-pane.component.scss</code> (or <code>tabbed-pane.component.css</code>) to style your <code>TabbedPaneCompnent</code>:</p>
+<pre><code class="language-css"><span class="hljs-comment">/* src/app/shared/controls/tabbed-pane/tabbed-pane.component.(s)css */</span>
+
+<span class="hljs-selector-class">.navigation</span> {
+    <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">30px</span>;
+}
+
+<span class="hljs-selector-class">.tab-link</span> {
+    <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>;
+    <span class="hljs-attribute">padding-bottom</span>: <span class="hljs-number">3px</span>;
+    <span class="hljs-attribute">border-bottom</span>: <span class="hljs-number">5px</span> solid darkseagreen;
+    <span class="hljs-attribute">margin-right</span>: <span class="hljs-number">10px</span>;
+}
+
+<span class="hljs-selector-class">.tab-link</span> <span class="hljs-selector-tag">a</span> {
+    <span class="hljs-attribute">color</span>: black;
+    <span class="hljs-attribute">cursor</span>: pointer;
+}
+
+<span class="hljs-selector-class">.tab-link</span> <span class="hljs-selector-tag">a</span><span class="hljs-selector-pseudo">:hover</span> {
+    <span class="hljs-attribute">color</span>: orangered;
+    <span class="hljs-attribute">text-decoration</span>: none;
+}
+
+<span class="hljs-selector-class">.tab-link</span> <span class="hljs-selector-tag">a</span><span class="hljs-selector-class">.active</span> {
+    <span class="hljs-attribute">color</span>: orangered;
+}
+``
+
+</code></pre>
+</li>
+<li>
+<p>Now, make the <code>TabComponent</code> to register itself with its parent <code>TabbedPaneComponent</code>. For this, open the file <code>tab.component.ts</code>, inject the <code>TabbedPaneComponent</code> and call the previously created <code>register</code> method:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tab/tab.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, Input, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { TabbedPaneComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tabbed-pane/tabbed-pane.component&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tab&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tab.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tab.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabComponent <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-meta">@Input</span>() title = <span class="hljs-string">&#x27;&#x27;</span>;
+  visible = <span class="hljs-literal">true</span>;
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">pane: TabbedPaneComponent</span>) {
+    pane.register(<span class="hljs-built_in">this</span>);
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {}
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>booking-history.component.html</code> and group your <code>tabs</code> with a <code>tabbed-pane</code> element:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">app-tabbed-pane</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Upcoming Flights&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No upcoming flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Operated Flights&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No operated flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;Cancelled Flights&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>No cancelled flights!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">app-tab</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-tabbed-pane</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and assure yourself that the tabbed pane is woking as indented.</p>
+</li>
+</ol>
+<h3 id="interacting-with-a-components-content">Interacting with a Component's Content</h3>
+<p>In this lab, you make your TabbedPane to directly interact with its TabComponent children. For this, you query them as content children.</p>
+<ol>
+<li>
+<p>Open the file <code>tabbed-pane.component.ts</code> and query the nested <code>TabComponents</code> using <code>ContentChildren</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.component.ts</span>
+
+<span class="hljs-keyword">import</span> { AfterContentInit, Component, ContentChildren, OnInit, QueryList } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { TabComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tab/tab.component&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tabbed-pane&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tabbed-pane.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tabbed-pane.component.scss&#x27;</span>]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabbedPaneComponent <span class="hljs-keyword">implements</span> OnInit, AfterContentInit {
+
+  <span class="hljs-meta">@ContentChildren</span>(TabComponent)
+  tabQueryList: QueryList&lt;TabComponent&gt; | <span class="hljs-literal">undefined</span>;
+
+  activeTab: TabComponent | <span class="hljs-literal">undefined</span>;
+  currentPage = <span class="hljs-number">0</span>;
+
+  get tabs(): TabComponent[] {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.tabQueryList?.toArray() ?? [];
+  }
+
+  ngAfterContentInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.tabs.length &gt; <span class="hljs-number">0</span>) {
+      <span class="hljs-built_in">this</span>.activate(<span class="hljs-built_in">this</span>.tabs[<span class="hljs-number">0</span>]);
+    }
+  }
+
+  [...]
+}
+</code></pre>
+<p>Please note, that we've exchanged the existing tabs property by a getter, returning the queried <code>TabComponents</code> as a traditional array.</p>
+</li>
+<li>
+<p>Now, you don't need to inject the <code>TabbedPaneComponent</code> into the <code>TabComponent</code> and call its <code>register</code> method anymore. Hence, open the file <code>tab.component.ts</code> and simplify it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tab/tab.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, Input, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>([...])
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabComponent <span class="hljs-keyword">implements</span> OnInit {
+
+  <span class="hljs-meta">@Input</span>() title = <span class="hljs-string">&#x27;&#x27;</span>;
+  visible = <span class="hljs-literal">true</span>;
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+  }
+
+}
+</code></pre>
+</li>
+</ol>
+<h3 id="interacting-with-a-components-view">Interacting with a Component's View</h3>
+<p>Now, let's interact with the <code>TabbedPane</code>'s view using <code>ViewChild</code>.</p>
+<h4 id="creating-a-tabnavigatorcomponent">Creating a TabNavigatorComponent</h4>
+<ol>
+<li>
+<p>Create a new <code>TabNavigatorComponent</code>:</p>
+<pre><code>ng g c shared/controls/tab-navigator --export
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>tab-navigator.component.ts</code> and extend it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tab-navigator/tab-navigator.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, EventEmitter, Input, OnInit, Output } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tab-navigator&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tab-navigator.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tab-navigator.component.scss&#x27;</span>], <span class="hljs-comment">// or .css</span>
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabNavigatorComponent <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-meta">@Input</span>() page = <span class="hljs-number">0</span>;
+  <span class="hljs-meta">@Input</span>() pageCount = <span class="hljs-number">0</span>;
+  <span class="hljs-meta">@Output</span>() pageChange = <span class="hljs-keyword">new</span> EventEmitter&lt;<span class="hljs-built_in">number</span>&gt;();
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {}
+
+  prev(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.page &lt;= <span class="hljs-number">1</span>) {
+      <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-built_in">this</span>.page--;
+    <span class="hljs-built_in">this</span>.pageChange.emit(<span class="hljs-built_in">this</span>.page);
+  }
+
+  next(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.page &gt;= <span class="hljs-built_in">this</span>.pageCount) {
+      <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-built_in">this</span>.page++;
+    <span class="hljs-built_in">this</span>.pageChange.emit(<span class="hljs-built_in">this</span>.page);
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>tab-navigator.component.html</code> and extend it as follows:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/tab-navigator/tab-navigator.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tab-navigator&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;prev&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;prev()&quot;</span>&gt;</span><span class="hljs-symbol">&amp;lt;</span><span class="hljs-symbol">&amp;lt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  # {{page}}
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;next&quot;</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;next()&quot;</span>&gt;</span><span class="hljs-symbol">&amp;gt;</span><span class="hljs-symbol">&amp;gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>You can style this component using the following CSS rules in the file <code>tab-navigator.component.scss</code> (or <code>.css</code>)</p>
+<pre><code class="language-css"><span class="hljs-comment">/* src/app/shared/controls/tab-navigator/tab-navigator.component.scss */</span>
+
+<span class="hljs-selector-class">.tab-navigator</span> {
+  <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> solid black;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">150px</span>;
+}
+
+<span class="hljs-selector-class">.tab-navigator</span> <span class="hljs-selector-tag">button</span> {
+  <span class="hljs-attribute">border</span>: none;
+  <span class="hljs-attribute">background-color</span>: inherit;
+}
+
+<span class="hljs-selector-class">.tab-navigator</span> <span class="hljs-selector-class">.next</span> {
+  <span class="hljs-attribute">float</span>: right;
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>tabbed-pane.component.html</code> and call the new <code>app-tab-navigator</code> element at the end:</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/tabbed-pane/tabbed-pane.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tabbed-pane&quot;</span>&gt;</span>
+  [...]
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab-navigator</span>
+    [<span class="hljs-attr">page</span>]=<span class="hljs-string">&quot;this.currentPage&quot;</span>
+    [<span class="hljs-attr">pageCount</span>]=<span class="hljs-string">&quot;this.tabs.length&quot;</span>
+    (<span class="hljs-attr">pageChange</span>)=<span class="hljs-string">&quot;pageChange($event)&quot;</span>
+  &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">app-tab-navigator</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>tabbed-pane.component.ts</code> and introduce a property <code>currentPage</code>. Update it after a changing the page:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.component.ts</span>
+
+<span class="hljs-keyword">import</span> { AfterContentInit, Component, ContentChildren, OnInit, QueryList } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { TabComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tab/tab.component&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tabbed-pane&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tabbed-pane.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tabbed-pane.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabbedPaneComponent <span class="hljs-keyword">implements</span> OnInit, AfterContentInit {
+  <span class="hljs-meta">@ContentChildren</span>(TabComponent)
+  tabQueryList: QueryList&lt;TabComponent&gt; | <span class="hljs-literal">undefined</span>;
+
+  activeTab: TabComponent | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-comment">// Add:</span>
+  currentPage = <span class="hljs-number">0</span>;
+
+  get tabs(): TabComponent[] {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.tabQueryList?.toArray() ?? [];
+  }
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
+
+  ngAfterContentInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.tabs.length &gt; <span class="hljs-number">0</span>) {
+      <span class="hljs-built_in">this</span>.activate(<span class="hljs-built_in">this</span>.tabs[<span class="hljs-number">0</span>]);
+    }
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {}
+
+  activate(active: TabComponent): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tab <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.tabs) {
+      tab.visible = tab === active;
+    }
+    <span class="hljs-built_in">this</span>.activeTab = active;
+
+    <span class="hljs-comment">// Add:</span>
+    <span class="hljs-built_in">this</span>.currentPage = <span class="hljs-built_in">this</span>.tabs.indexOf(active) + <span class="hljs-number">1</span>;
+  }
+
+  <span class="hljs-comment">// Add:</span>
+  pageChange(page: <span class="hljs-built_in">number</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.activate(<span class="hljs-built_in">this</span>.tabs[page - <span class="hljs-number">1</span>]);
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and assure yourself that the tabbed pane is woking as indented.</p>
+</li>
+</ol>
+<h4 id="using-template-variables">Using Template Variables</h4>
+<p>Open the file <code>tabbed-pane.component.html</code> and introduce a template variable for the <code>app-tab-navigator</code> using <code>#navigator</code>. Use this template variable to display the current page and to provide two additional buttons for navigating between the tabs (using the <code>prev</code> and <code>next</code> method):</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/tabbed-pane/tabbed-pane.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tabbed-pane&quot;</span>&gt;</span>
+  [...]
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab-navigator</span>
+    #<span class="hljs-attr">navigator</span>
+    [<span class="hljs-attr">page</span>]=<span class="hljs-string">&quot;currentPage&quot;</span>
+    [<span class="hljs-attr">pageCount</span>]=<span class="hljs-string">&quot;this.tabs.length&quot;</span>
+    (<span class="hljs-attr">pageChange</span>)=<span class="hljs-string">&quot;pageChange($event)&quot;</span>
+  &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">app-tab-navigator</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;navigator.prev()&quot;</span>&gt;</span>Prev<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    {{navigator.page}}
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;navigator.next()&quot;</span>&gt;</span>Next<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<h4 id="bonus-directly-accessing-a-viewchild-">Bonus: Directly Accessing a ViewChild *</h4>
+<p>Normally, using data bindings is the prefered way of communicating with child components. However, if a needed property or event does not exist, you can directly access your child components via ViewChilds. This section demonstrates this.</p>
+<ol>
+<li>
+<p>Open the <code>tabbed-pane.component.html</code> and remove some of the data-bindings for the <code>app-tab-navigator</code> element (but not (!) <code>page</code>):</p>
+<pre><code class="language-html"><span class="hljs-comment">&lt;!-- src/app/shared/controls/tabbed-pane/tabbed-pane.component.html --&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tabbed-pane&quot;</span>&gt;</span>
+  [...]
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">app-tab-navigator</span> [<span class="hljs-attr">page</span>]=<span class="hljs-string">&quot;currentPage&quot;</span> #<span class="hljs-attr">navigator</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">app-tab-navigator</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Now, open the file <code>tabbed-pane.component.ts</code> and fetch the <code>TabNavigatorComponent</code> using the <code>ViewChild</code> decorator:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.component.ts</span>
+
+<span class="hljs-comment">// ViewChild importieren:</span>
+<span class="hljs-keyword">import</span> { AfterContentInit, AfterViewInit, Component, ContentChildren, OnInit, QueryList, ViewChild } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-comment">// Hinzufügen:</span>
+<span class="hljs-keyword">import</span> { TabNavigatorComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tab-navigator/tab-navigator.component&#x27;</span>;
+
+<span class="hljs-keyword">import</span> { TabComponent } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tab/tab.component&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>([...])
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabbedPaneComponent <span class="hljs-keyword">implements</span> OnInit, AfterContentInit, AfterViewInit {
+
+  <span class="hljs-meta">@ContentChildren</span>(TabComponent)
+  tabQueryList: QueryList&lt;TabComponent&gt; | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-comment">// Add:</span>
+  <span class="hljs-meta">@ViewChild</span>(<span class="hljs-string">&#x27;navigator&#x27;</span>)
+  navigator: TabNavigatorComponent | <span class="hljs-literal">undefined</span>;
+
+  activeTab: TabComponent | <span class="hljs-literal">undefined</span>;
+  currentPage = <span class="hljs-number">0</span>;
+
+  get tabs(): TabComponent[] {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.tabQueryList?.toArray() ?? [];
+  }
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {
+  }
+
+  <span class="hljs-comment">// Directly interact with the navigator</span>
+  ngAfterViewInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.navigator) {
+      <span class="hljs-built_in">this</span>.navigator.pageCount = <span class="hljs-built_in">this</span>.tabs.length;
+      <span class="hljs-comment">// This line would cause a cycle:</span>
+      <span class="hljs-comment">// this.navigator.page = 1;</span>
+      <span class="hljs-built_in">this</span>.navigator.pageChange.subscribe(<span class="hljs-function">(<span class="hljs-params">page: <span class="hljs-built_in">number</span></span>) =&gt;</span> {
+        <span class="hljs-built_in">this</span>.pageChange(page);
+      });
+    }
+  }
+
+  ngAfterContentInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.tabs.length &gt; <span class="hljs-number">0</span>) {
+      <span class="hljs-built_in">this</span>.activate(<span class="hljs-built_in">this</span>.tabs[<span class="hljs-number">0</span>]);
+    }
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+  }
+
+  [...]
+
+}
+
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and assure yourself that the tabbed pane is woking as indented.</p>
+</li>
+</ol>
+<h4 id="bonus-communicating-via-services-">Bonus: Communicating via Services *</h4>
+<ol>
+<li>
+<p>Add a <code>TabbedPaneService</code>:</p>
+<pre><code>ng g s shared/controls/tabbed-pane/tabbed-pane
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>tabbed-pane.service.ts</code> and modify it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.service.ts</span>
+
+<span class="hljs-keyword">import</span> { Injectable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { BehaviorSubject, Subject } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabbedPaneService {
+  <span class="hljs-keyword">readonly</span> pageCount = <span class="hljs-keyword">new</span> BehaviorSubject&lt;<span class="hljs-built_in">number</span>&gt;(<span class="hljs-number">0</span>);
+  <span class="hljs-keyword">readonly</span> currentPage = <span class="hljs-keyword">new</span> BehaviorSubject&lt;<span class="hljs-built_in">number</span>&gt;(<span class="hljs-number">1</span>);
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>tabbed-pane.component.ts</code> and register the <code>TabbedPaneService</code> directly in the Component decorator. Also, inject it into the constructor:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.component.ts</span>
+
+[...]
+
+<span class="hljs-comment">// Add import:</span>
+<span class="hljs-keyword">import</span> { TabbedPaneService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./tabbed-pane.service&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  [...]
+
+  <span class="hljs-comment">// Add provider:</span>
+  providers: [TabbedPaneService]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabbedPaneComponent <span class="hljs-keyword">implements</span> OnInit, AfterContentInit, AfterViewInit {
+
+  [...]
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> service: TabbedPaneService</span>) {
+  }
+
+  [...]
+
+}
+</code></pre>
+</li>
+<li>
+<p>In the same file, update the <code>ngAfterViewInit</code> and <code>activate</code> methods as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tabbed-pane/tabbed-pane.component.ts</span>
+[...]
+
+<span class="hljs-comment">// Update this method:</span>
+ngAfterViewInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.service.pageCount.next(<span class="hljs-built_in">this</span>.tabs.length);
+    <span class="hljs-built_in">this</span>.service.currentPage.subscribe(<span class="hljs-function">(<span class="hljs-params">page: <span class="hljs-built_in">number</span></span>) =&gt;</span> {
+      <span class="hljs-comment">// Prevent cycle:</span>
+      <span class="hljs-keyword">if</span> (page === <span class="hljs-built_in">this</span>.currentPage) {
+        <span class="hljs-keyword">return</span>;
+      }
+      <span class="hljs-built_in">this</span>.pageChange(page);
+    });
+}
+
+[...]
+
+activate(active: TabComponent): <span class="hljs-built_in">void</span> {
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tab <span class="hljs-keyword">of</span> <span class="hljs-built_in">this</span>.tabs) {
+    tab.visible = (tab === active);
+  }
+  <span class="hljs-built_in">this</span>.activeTab = active;
+  <span class="hljs-comment">// Update:</span>
+  <span class="hljs-built_in">this</span>.currentPage = <span class="hljs-built_in">this</span>.tabs.indexOf(active) + <span class="hljs-number">1</span>;
+  <span class="hljs-built_in">this</span>.service.currentPage.next(<span class="hljs-built_in">this</span>.currentPage);
+}
+</code></pre>
+</li>
+<li>
+<p>Also, open the file <code>tab-navigator.component.ts</code> and inject the <code>TabbedPaneService</code>. Use it to communicate with the <code>TabbedPaneComponent</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/shared/controls/tab-navigator/tab-navigator.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { TabbedPaneService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../tabbed-pane/tabbed-pane.service&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-tab-navigator&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./tab-navigator.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./tab-navigator.component.scss&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TabNavigatorComponent <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-comment">// No imports anymore:</span>
+  page = <span class="hljs-number">0</span>;
+  pageCount = <span class="hljs-number">0</span>;
+
+  <span class="hljs-comment">// Inject service here:</span>
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> service: TabbedPaneService</span>) {}
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-comment">// Hinzufügen: Von Service benachrichtigen lassen</span>
+    <span class="hljs-built_in">this</span>.service.pageCount.subscribe(<span class="hljs-function">(<span class="hljs-params">pageCount</span>) =&gt;</span> {
+      <span class="hljs-built_in">this</span>.pageCount = pageCount;
+    });
+    <span class="hljs-built_in">this</span>.service.currentPage.subscribe(<span class="hljs-function">(<span class="hljs-params">page</span>) =&gt;</span> {
+      <span class="hljs-built_in">this</span>.page = page;
+    });
+  }
+
+  prev(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.page &lt;= <span class="hljs-number">1</span>) {
+      <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-built_in">this</span>.page--;
+
+    <span class="hljs-comment">// Add: Notify service:</span>
+    <span class="hljs-built_in">this</span>.service.currentPage.next(<span class="hljs-built_in">this</span>.page);
+  }
+
+  next(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.page &gt;= <span class="hljs-built_in">this</span>.pageCount) {
+      <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-built_in">this</span>.page++;
+
+    <span class="hljs-comment">// Add: Notify service:</span>
+    <span class="hljs-built_in">this</span>.service.currentPage.next(<span class="hljs-built_in">this</span>.page);
+  }
+}
+</code></pre>
+</li>
+</ol>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="copy.js"></script>
+    <script src="toggle.js"></script>
+    <script src="copy-diff.js"></script>
+
+  </body>
+</html>
