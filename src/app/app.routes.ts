@@ -16,8 +16,33 @@ export const APP_ROUTES: Routes = [
     component: HomeComponent
   },
   {
-    path: 'about',
+    path: 'flight-booking',
+    loadChildren: () => import('./flight-booking/flight-booking.module').then((m) => m.FlightBookingModule),
+    data: {
+      preloading: {
+        preload: true,
+        startLoadingFrom: 29
+      }
+    }
+  },
+  {
+    path: 'customer',
+    loadChildren: () => import('./customer/customer.module').then((m) => m.CustomerModule),
+    data: {
+      preloading: {
+        preload: true,
+        startLoadingFrom: 1
+      }
+    }
+  },
+  {
+    path: 'about1',
     component: AboutComponent
+  },
+  {
+    path: 'about',
+    component: AboutComponent,
+    outlet: 'aux'
   },
   {
     path: '**',

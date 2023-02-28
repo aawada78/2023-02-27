@@ -1,2 +1,8 @@
 <!-- src/app/home/home.component.html -->
-<h1>Welcome!</h1>
+<h1 *ngIf="userName">Welcome {{ userName }}!</h1>
+<h1 *ngIf="!userName">Welcome! Please Login!</h1>
+
+<div>
+    <button class="btn btn-default" *ngIf="!userName" (click)="login()">Login</button>
+    <button class="btn btn-default" *ngIf="userName" (click)="logout()">Logout</button>
+</div>

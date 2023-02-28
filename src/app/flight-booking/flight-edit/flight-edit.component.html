@@ -6,3 +6,6 @@
 <p>
   ShowDetail: {{id}}
 </p>
+<input type="checkbox" [(ngModel)]="deactivate">
+
+<pre *ngIf="flight">{{ flight | json }}</pre>

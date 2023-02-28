@@ -3,7 +3,12 @@ import { BookingHistoryComponent } from './booking-history/booking-history.compo
 
 export const CUSTOMER_ROUTES: Routes = [
   {
-    path: 'customer/booking-history',
+    path: '',
+    redirectTo: 'booking-history',
+    pathMatch: 'full'
+  },
+  {
+    path: 'booking-history',
     component: BookingHistoryComponent
   }
 ];

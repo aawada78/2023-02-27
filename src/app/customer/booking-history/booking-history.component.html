@@ -3,16 +3,68 @@
 <app-tabbed-pane #pane>
     <!-- <app-tab *ngFor="let bla of genericTabs"></app-tab> -->
     <app-tab title="Anstehende Flüge">
-        <p>Keine ansehenden Flüge</p>
+        <!-- Using DataTable in HTML -->
+        <app-data-table [data]="flights">
+            <div *appTableField="let data as 'id'">{{ data }}</div>
+            <div *appTableField="let data as 'from'">{{ data }}</div>
+            <div *appTableField="let data as 'to'">{{ data }}</div>
+            <div *appTableField="let data as 'date'">{{ data }}</div>
+        </app-data-table>
+
     </app-tab>
 
     <app-tab title="Durchgeführte Flüge">
-        <p>Keine durchgeführten Flüge</p>
+        <!-- Using Component wrapping DataTable -->
+        <app-flights-table [flights]="flights2"></app-flights-table>
     </app-tab>
 
     <app-tab title="Verspätete Flüge">
-        <p>Keine verspäteten Flüge</p>
+        <!-- Using Template with DataTable -->
+        <div *ngTemplateOutlet="flightsDataTable; context: { $implicit: flights3 }"></div>
     </app-tab>
 
 </app-tabbed-pane>
 <!-- <p>{{ pane.currentPage }}</p> -->
+
+<ng-template #flightsDataTable let-flights>
+    <app-data-table [data]="flights">
+        <div *appTableField="let data as 'id'">{{ data }}</div>
+        <div *appTableField="let data as 'from'">{{ data }}</div>
+        <div *appTableField="let data as 'to'">{{ data }}</div>
+        <div *appTableField="let data as 'date'">{{ data }}</div>
+    </app-data-table>
+</ng-template>
+
+<div>
+    <input [appTooltip]="tooltiptemplate" title="Input Title Tooltip">
+
+    <ng-template #tooltiptemplate let-title let-dings="content" let-link="helplink">
+        <h3>{{ title }}</h3>
+        <p>{{ dings }}</p>
+        <p>Hilfe: Click <a [href]="link">here</a></p>
+    </ng-template>
+</div>
+<div>
+    <button (appClickWithWarning)="delete()" message="Are you sure?">Delete</button>
+    <!-- <button (click)="delete()" message="Are you sure?">Delete</button> -->
+</div>
+<div>
+    <h3>Template Outlets</h3>
+    <ng-container *ngTemplateOutlet="hitemplate">
+    </ng-container>
+
+    <ng-container *ngTemplateOutlet="hi2template; context: bla">
+    </ng-container>
+
+
+    <ng-template #hitemplate>
+        <p>Hallo zusammen</p>
+    </ng-template>
+    <ng-template #hi2template let-text>
+        <p>Hallo {{ text }}</p>
+    </ng-template>
+</div>
+<div>
+    <h3>Component Outlets</h3>
+    <div *ngComponentOutlet="outletComponent"></div>
+</div>
