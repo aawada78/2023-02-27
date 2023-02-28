@@ -341,7 +341,7 @@ ng generate service dummy-passenger
 <ol>
 <li>
 <p>In your flight-booking folder, add a file <code>passenger-api.module.ts</code> by hand:</p>
-<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-booking/passenger-api.module.ts</span>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/flight-booking/passenger-api.module.ts</span>
 
 <span class="hljs-keyword">import</span> { NgModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
 
@@ -356,7 +356,7 @@ ng generate service dummy-passenger
 </li>
 <li>
 <p>Open the file <code>flight-booking.module.ts</code> and import the created <code>PassengerApiModule</code>:</p>
-<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-booking/passenger-booking.module.ts</span>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/flight-booking/passenger-booking.module.ts</span>
 
 [...]
 <span class="hljs-keyword">import</span> { PassengerApiModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger-api.module&#x27;</span>;
@@ -416,7 +416,7 @@ ng generate service dummy-passenger
 </li>
 <li>
 <p>Open the <code>passenger-search.component.ts</code> file and adjust it as follows:</p>
-<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-booking/passenger-search/passenger-search.component.ts</span>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/flight-booking/passenger-search/passenger-search.component.ts</span>
 
 <span class="hljs-keyword">import</span> { Component, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
 <span class="hljs-keyword">import</span> { AuthService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../../shared/auth/auth.service&#x27;</span>;
@@ -491,7 +491,7 @@ ng generate service dummy-passenger
 </code></pre>
 </li>
 <li>
-<p>Open the <code>passenger-booking.module.ts</code> file and make sure the <code>SharedModule</code> is imported using <code>forChild</code>:</p>
+<p>Open the <code>flight-booking.module.ts</code> file and make sure the <code>SharedModule</code> is imported using <code>forChild</code>:</p>
 <pre><code class="language-typescript">imports: [
   [...],
   SharedModule.forChild()
