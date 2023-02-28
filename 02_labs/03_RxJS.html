@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Workshop by AngularArchitects.io</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="description" content="Description" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs/styles/atom-one-light.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="copy.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+
+  <body class="ready">
+    <!-- <nav class="app-nav no-badge">
+    </nav> -->
+
+    <!-- placeholder:cover-page -->
+
+    <main>
+      <button class="sidebar-toggle" aria-label="Menu">
+        <div class="sidebar-toggle-button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <aside class="sidebar">
+        <div class="sidebar-nav">
+          <p>&nbsp;</p>
+          <ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="slides.html">Slides</a></li>
+<li><a href="00_getting-started.html">Getting Started</a></li>
+<li><a href="01_components.html">Components Deep Dive</a></li>
+<li><a href="03_RxJS.html">RxJs</a></li>
+<li><a href="02_data-binding.html">Data Binding with OnPush</a></li>
+<li><a href="03_directives.html">Directives - Deep Dive</a></li>
+<li><a href="05_routing_advanced.html">Advanced Routing</a></li>
+<li><a href="04_services-adv.html">Services & DI</a></li>
+<li><a href="06a_template-driven_forms.html">Template Driven Forms</a></li>
+<li><a href="06b_reactive_forms.html">Reactive Forms</a></li>
+</ul>
+
+        </div>
+      </aside>
+
+      <section class="content">
+        <article class="markdown-section" id="main">
+          <h1 id="rxjs">RxJs</h1>
+<ul>
+<li><a href="#rxjs">RxJs</a>
+<ul>
+<li><a href="#simple-lookahead">Simple Lookahead</a></li>
+<li><a href="#bonus-further-operators-for-lookahead-">Bonus: Further Operators for Lookahead *</a></li>
+<li><a href="#bonus-size-difference-of-two-search-results-">Bonus: Size Difference of two Search Results *</a></li>
+<li><a href="#combine-streams-">Combine Streams *</a></li>
+<li><a href="#bonus-combinelatest-vs-withlatestfrom">Bonus: combineLatest vs. withLatestFrom</a></li>
+<li><a href="#bonus-search-by-from-and-to-">Bonus: Search by from and to **</a></li>
+<li><a href="#bonus-refresh-button-">Bonus: Refresh Button ***</a></li>
+<li><a href="#multicasting">Multicasting</a></li>
+<li><a href="#error-handling-">Error Handling *</a></li>
+<li><a href="#closing-observables">Closing Observables</a>
+<ul>
+<li><a href="#experiment-1">Experiment 1</a></li>
+<li><a href="#experiment-2">Experiment 2</a></li>
+<li><a href="#experiment-3">Experiment 3</a></li>
+<li><a href="#experiment-4">Experiment 4</a></li>
+</ul>
+</li>
+<li><a href="#shopping-basket-with-scan-">Shopping Basket with Scan *</a></li>
+<li><a href="#bonus-result-history-with-scan-">Bonus: Result History with Scan **</a></li>
+<li><a href="#custom-operator-switchmapcompensate-">Custom Operator: switchMapCompensate *</a></li>
+<li><a href="#bonus-custom-operator-switchmapretry-">Bonus: Custom Operator: switchMapRetry **</a></li>
+<li><a href="#bonus-custom-operator-switchmapbackoff-for-exponential-backoff-">Bonus: Custom Operator: switchMapBackoff for Exponential Backoff **</a></li>
+</ul>
+</li>
+</ul>
+<p><strong>Note:</strong> For this lab, please use the <strong>flight-app</strong> in our starter kit.</p>
+<h2 id="simple-lookahead">Simple Lookahead</h2>
+<p>In this exercise, you'll implement the presented lookahead. For this, you can use the following API:</p>
+<pre><code>http://angular.at/api/flight?from=G
+</code></pre>
+<p>As you see in this URL, the API takes an parameter for filtering flights with respect to a specific airport name.</p>
+<ol>
+<li>
+<p>Open the file <code>app.module.ts</code> and make sure, that the <code>ReactiveFormsModule</code> is imported into the <code>AppModule</code>.</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-TypeScript">[...]
+<span class="hljs-keyword">import</span> { ReactiveFormsModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/forms&#x27;</span>;
+[...]
+
+<span class="hljs-meta">@NgModule</span>({
+    imports: [
+        BrowserModule,
+        HttpClientModule,
+        ReactiveFormsModule,
+        [...]
+   ],
+   [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule {}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Switch to the folder <code>app</code> an create a <code>FlightLookaheadComponent</code>. Make sure, it is declared in the <code>AppModule</code>.</p>
+</li>
+<li>
+<p>Open the file <code>app.routes.ts</code> and create a route for your new component.</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> APP_ROUTES: Routes = [
+    {
+        path: <span class="hljs-string">&#x27;&#x27;</span>,
+        redirectTo: <span class="hljs-string">&#x27;home&#x27;</span>,
+        pathMatch: <span class="hljs-string">&#x27;full&#x27;</span>
+    },
+    {
+        path: <span class="hljs-string">&#x27;home&#x27;</span>,
+        component: HomeComponent
+    },
+    <span class="hljs-comment">// Insert this line:</span>
+    {
+        path: <span class="hljs-string">&#x27;flight-lookahead&#x27;</span>,
+        component: FlightLookaheadComponent
+    },
+    [...]
+
+]
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Open the <code>sidebar.component.html</code> file and create a menu option for the new route.</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">routerLink</span>=<span class="hljs-string">&quot;flight-lookahead&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;ti-user&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lookahead<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Switch back to your new component and add the following properties:</p>
+<pre><code class="language-TypeScript">control!: FormControl;
+flights$!: Observable&lt;Flight[]&gt;;
+loading = <span class="hljs-literal">false</span>;
+</code></pre>
+</li>
+<li>
+<p>Inject the <code>HttpClient</code> into its constructor.</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> http: HttpClient</span>) {}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Create a method <code>load(from: string):Observable&lt;Flight[]&gt; { ... } </code>. Implement this method, so that all flights starting at the passed airport are returned.</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-TypeScript">load(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>): Observable&lt;Flight[]&gt; {
+    <span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;http://www.angular.at/api/flight&quot;</span>;
+
+    <span class="hljs-keyword">const</span> params = <span class="hljs-keyword">new</span> HttpParams().set(<span class="hljs-string">&#x27;from&#x27;</span>, <span class="hljs-keyword">from</span>);
+
+    <span class="hljs-comment">// If you use json-server, use the parameter from_like:</span>
+    <span class="hljs-comment">// const params = new HttpParams().set(&#x27;from_like&#x27;, from);</span>
+
+    <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> HttpHeaders().set(<span class="hljs-string">&#x27;Accept&#x27;</span>, <span class="hljs-string">&#x27;application/json&#x27;</span>);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.http.get&lt;Flight[]&gt;(url, {params, headers});
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Implement the Interface <code>OnInit</code>. Use the <code>ngOnInit</code> method to establish the needed dataflow between your input control (property <code>control</code>) and your result (<code>flights$</code>).</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-TypeScript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightLookaheadComponent <span class="hljs-keyword">implements</span> OnInit {
+
+    ngOnInit(): <span class="hljs-built_in">void</span> {
+        <span class="hljs-built_in">this</span>.control = <span class="hljs-keyword">new</span> FormControl();
+
+        <span class="hljs-built_in">this</span>.flights$ =
+            <span class="hljs-built_in">this</span>.control
+                .valueChanges
+                .pipe(
+                    debounceTime(<span class="hljs-number">300</span>),
+                    tap(<span class="hljs-function"><span class="hljs-params">input</span> =&gt;</span> <span class="hljs-built_in">this</span>.loading = <span class="hljs-literal">true</span>),
+                    switchMap(<span class="hljs-function"><span class="hljs-params">input</span> =&gt;</span> <span class="hljs-built_in">this</span>.load(input)),
+                    tap(<span class="hljs-function"><span class="hljs-params">v</span> =&gt;</span> <span class="hljs-built_in">this</span>.loading = <span class="hljs-literal">false</span>)
+                );
+    }
+
+    [...]
+}
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Open the file <code>flight-lookahead.component.html</code> and create an input element. Bind it to your control object. Also, display the value of your property <code>loading</code>.</p>
+<details>
+<summary>Show code</summary>
+<p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;card&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;header&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>Lookahead<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;content&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;control-group&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>City<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">input</span> [<span class="hljs-attr">formControl</span>]=<span class="hljs-string">&quot;control&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;form-control&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;loading&quot;</span>&gt;</span>Loading ...<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Create a new table and bind it to your <code>flights$</code> property using the <code>async</code> pipe.</p>
+ <details>
+ <summary>Show code</summary>
+ <p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">table</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;table table-striped&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let f of flights$ | async&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>{{f.id}}<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>{{f.from}}<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>{{f.to}}<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>{{f.date | date:&#x27;dd.MM.yyyy HH:mm&#x27;}}<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">table</span>&gt;</span>
+</code></pre>
+ </p>
+ </details>
+</li>
+<li>
+<p>Test your solution.</p>
+</li>
+</ol>
+<h2 id="bonus-further-operators-for-lookahead-">Bonus: Further Operators for Lookahead *</h2>
+<p>In this exercise, you'll add the operators <code>distinctUntilChanged</code> and <code>filter</code> to your case study. You find further information about them at <code>http://rxmarbles.com</code>.</p>
+<ol>
+<li>
+<p>Look at the docs for <code>distinctUntilChanged</code> at <a href="http://rxmarbles.com/#distinctUntilChanged">http://rxmarbles.com/#distinctUntilChanged</a> and integrate it into your example. The goal is to prevent an additional http call when during a <code>debounce</code> period something is changed and undone again.</p>
+</li>
+<li>
+<p>Test your solution. You can use your browser's network tab find out how many http requests are sent out.</p>
+</li>
+<li>
+<p>Have a look at the docs of the operator <code>filter</code> at <a href="http://rxmarbles.com/#filter">http://rxmarbles.com/#filter</a>. Integrate it into your example to make sure that a http request is only done after the user has entered 3 characters at minimum.</p>
+</li>
+<li>
+<p>Test your solution.</p>
+</li>
+</ol>
+<h2 id="bonus-size-difference-of-two-search-results-">Bonus: Size Difference of two Search Results *</h2>
+<p>In this example, you'll calculate the size difference of two subsequent search results. Let's assume, the first search brings up 10 flights and the second one brings 15. In this case, the calculated difference is 5.</p>
+<p>For this, create an observable using the existing <code>flights$</code> observable:</p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.diff$ = <span class="hljs-built_in">this</span>.flights$
+  .pipe
+  <span class="hljs-comment">// here we need some operators ...</span>
+  ();
+</code></pre>
+<p>To finish this implementation, you'll need the operators <code>pairwise</code> and <code>map</code>. You can find a description for <code>pairwise</code> <a href="https://rxjs-dev.firebaseapp.com/api/operators/pairwise">here</a> and <a href="https://www.learnrxjs.io/operators/combination/pairwise.html">here</a>.</p>
+<details>
+<summary>Solution</summary>
+<p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.diff$ = <span class="hljs-built_in">this</span>.flights$.pipe(
+  pairwise(),
+  map(<span class="hljs-function">(<span class="hljs-params">[a, b]</span>) =&gt;</span> b.length - a.length)
+);
+</code></pre>
+</p>
+</details>
+<h2 id="combine-streams-">Combine Streams *</h2>
+<p>In this example, you'll introduce another observable that simulates the network state. Also, you will make sure, that your solution will only search for flights if the state is &quot;connected&quot;.</p>
+<ol>
+<li>
+<p>Add the following properties to your component:</p>
+<ul>
+<li><code>online = false</code>;</li>
+<li><code>online$!: Observable&lt;boolean&gt;</code>;</li>
+</ul>
+</li>
+<li>
+<p>Add the following lines to your <code>ngOnInit</code> method.</p>
+<pre><code class="language-TypeScript">ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.control = <span class="hljs-keyword">new</span> FormControl();
+
+    <span class="hljs-built_in">this</span>.online$ = interval(<span class="hljs-number">2000</span>).pipe(
+        startWith(<span class="hljs-number">0</span>),
+        map(<span class="hljs-function"><span class="hljs-params">_</span> =&gt;</span> <span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.5</span>),
+        distinctUntilChanged(),
+        tap(<span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> <span class="hljs-built_in">this</span>.online = value)
+    );
+    [...]
+}
+</code></pre>
+<p>As you can see here, <code>online$</code> can emit a new network state (true or false for connected and disconnected) every two seconds. As it is a cold observable, it will only start sending data after a a subscription has been setup. Hence, you'll combine it with the other observable in the next step.</p>
+</li>
+<li>
+<p>Have a look at <a href="http://rxmarbles.com">http://rxmarbles.com</a> to find out how <code>combineLatest</code> and <code>filter</code> work. Try to find out how to use them to combine the new <code>online$</code> observable with the existing <code>flights$</code> observable. The goal is to only search for flights when the machine is connected.</p>
+<p><strong>Hint:</strong> <code>combineLatest</code> returns an array with the current values of the combined observables:</p>
+<pre><code class="language-TypeScript">combineLatest([observable1, observable2]).subscribe(
+    <span class="hljs-function">(<span class="hljs-params">tuple</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> latestFromObservable1 = tuple[<span class="hljs-number">0</span>];
+        <span class="hljs-keyword">const</span> latestFromObservable2 = tuple[<span class="hljs-number">1</span>];
+        [...]
+    }
+)
+
+[...]
+
+<span class="hljs-comment">// The same, with a compacter syntax:</span>
+combineLatest([observable1, observable2]).subscribe(
+    <span class="hljs-function">(<span class="hljs-params">[latestFromObservable1, latestFromObservable2]</span>) =&gt;</span> {
+        [...]
+    }
+)
+
+<span class="hljs-comment">// Since RxJS 7, we can also write it that way:</span>
+combineLatest({o1: observable1, o2: observable2}).subscribe(
+    <span class="hljs-function">(<span class="hljs-params">combined</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> latestFromObservable1 = combined.o1;
+        <span class="hljs-keyword">const</span> latestFromObservable2 = combined.o2;
+    }
+)
+</code></pre>
+<p><strong>Hint:</strong> Further information about <code>combineLatest</code> can be found at <a href="https://www.learnrxjs.io">https://www.learnrxjs.io</a>.</p>
+<details>
+<summary>Solution</summary>
+<p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.online$ = interval(<span class="hljs-number">2000</span>).pipe(
+  startWith(<span class="hljs-number">0</span>),
+  map(<span class="hljs-function">(<span class="hljs-params">_</span>) =&gt;</span> <span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.5</span>),
+  distinctUntilChanged(),
+  tap(<span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> (<span class="hljs-built_in">this</span>.online = value))
+);
+
+<span class="hljs-keyword">const</span> input$ = <span class="hljs-built_in">this</span>.control.valueChanges.pipe(debounceTime(<span class="hljs-number">300</span>));
+
+<span class="hljs-built_in">this</span>.flights$ = combineLatest({ input: input$, online: <span class="hljs-built_in">this</span>.online$ }).pipe(
+  filter(<span class="hljs-function">(<span class="hljs-params">combined</span>) =&gt;</span> combined.online),
+  switchMap(<span class="hljs-function">(<span class="hljs-params">combined</span>) =&gt;</span> <span class="hljs-built_in">this</span>.load(combined.input))
+);
+</code></pre>
+</p>
+</details>
+</li>
+<li>
+<p>Display the value of <code>online</code> (not <code>online$</code>) via data binding:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Online: {{online}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+</li>
+<li>
+<p>Test your solution.</p>
+</li>
+</ol>
+<h2 id="bonus-combinelatest-vs-withlatestfrom">Bonus: combineLatest vs. withLatestFrom</h2>
+<p>Change your solution to use <code>withLatestFrom</code> instead of combineLatest. Please note that withLatestFrom <strong>isn't</strong> a creation operator (factory) but called within <code>pipe</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.flights$ = input$.pipe(
+  withLatestFrom(<span class="hljs-built_in">this</span>.online$),
+  filter(<span class="hljs-function">(<span class="hljs-params">[, online]</span>) =&gt;</span> online),
+  map(<span class="hljs-function">(<span class="hljs-params">[input]</span>) =&gt;</span> input),
+  tap(<span class="hljs-function">() =&gt;</span> (<span class="hljs-built_in">this</span>.loading = <span class="hljs-literal">true</span>)),
+  switchMap(<span class="hljs-function">(<span class="hljs-params">name</span>) =&gt;</span> <span class="hljs-built_in">this</span>.load(name)),
+  tap(<span class="hljs-function">() =&gt;</span> (<span class="hljs-built_in">this</span>.loading = <span class="hljs-literal">false</span>))
+);
+</code></pre>
+<p>Find out, how your application behaves differently now.</p>
+<h2 id="bonus-search-by-from-and-to-">Bonus: Search by from and to **</h2>
+<p>Implement a second textbox for the airport of destination (field <code>to</code>). When ever the field <code>from</code> or <code>to</code> is modified, the result table shall be updated.</p>
+<p>Make sure, no query is sent to the server, when both, <code>from</code> and <code>to</code> are empty.</p>
+<p><strong>Hint:</strong> <code>combineLatest</code> can take several parameters:</p>
+<pre><code class="language-typescript">combineLatest([a$, b$, c$]).pipe(
+    tap(<span class="hljs-function">(<span class="hljs-params">[a,b,c]</span>) =&gt;</span> <span class="hljs-built_in">console</span>.debug(<span class="hljs-string">&#x27;abc&#x27;</span>, a, b, c) );
+)
+</code></pre>
+<h2 id="bonus-refresh-button-">Bonus: Refresh Button ***</h2>
+<p>Now, let's try to introduce a button reloading the current result set. For this, add an observable and a click handler for the button:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">private</span> refreshClickSubject = <span class="hljs-keyword">new</span> Subject&lt;<span class="hljs-built_in">void</span>&gt;();
+refreshClick$ = <span class="hljs-built_in">this</span>.refreshClickSubject.asObservable();
+
+refresh(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.refreshClickSubject.next();
+}
+</code></pre>
+<details>
+<summary>Solution</summary>
+<p>
+<pre><code class="language-typescript">[...]
+
+<span class="hljs-keyword">const</span> debouncedFrom$ = <span class="hljs-built_in">this</span>.controlFrom.valueChanges.pipe(debounceTime(<span class="hljs-number">300</span>));
+<span class="hljs-keyword">const</span> debouncedTo$ = <span class="hljs-built_in">this</span>.controlTo.valueChanges.pipe(debounceTime(<span class="hljs-number">300</span>));
+
+<span class="hljs-keyword">const</span> combined$ = combineLatest([debouncedFrom$, debouncedTo$, <span class="hljs-built_in">this</span>.online$])
+                    .pipe(shareReplay({ bufferSize:<span class="hljs-number">1</span>, refCount: <span class="hljs-literal">true</span> }));
+
+<span class="hljs-built_in">this</span>.flights$ = merge(
+    combined$,
+    <span class="hljs-built_in">this</span>.refreshClick$.pipe(map(<span class="hljs-function"><span class="hljs-params">_</span> =&gt;</span> [<span class="hljs-built_in">this</span>.controlFrom.value, <span class="hljs-built_in">this</span>.controlTo.value, <span class="hljs-built_in">this</span>.online]))
+
+    <span class="hljs-comment">// This is an alternative without side effects (like this.online):</span>
+    <span class="hljs-comment">// this.refreshClick$.pipe(switchMap(_ =&gt; combined$.pipe(take(1))))</span>
+).pipe(
+    filter( <span class="hljs-function">(<span class="hljs-params">[_, __,  online]</span>) =&gt;</span> online),
+    map(<span class="hljs-function">(<span class="hljs-params">[value, valueTo, _]</span>) =&gt;</span> [value, valueTo]),
+    <span class="hljs-comment">// further remaining operators</span>
+);
+</code></pre>
+</p>
+</details>
+<p>The button in the template looks like this:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;refresh()&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+</code></pre>
+<p>To implement the logic, <code>merge</code> the result of your existing <code>combineLatest</code> call with <code>refreshClick$</code>. You find some information about <code>merge</code> <a href="https://rxmarbles.com/#merge">here</a> and <a href="https://www.learnrxjs.io/operators/combination/merge.html">here</a>.</p>
+<p>Make sure to emit the current search criteria via <code>refreshClick$</code>.</p>
+<h2 id="multicasting">Multicasting</h2>
+<p>In this example, we share the online$ observable to be able to use it multiple times -- with combineLatest and in the template.</p>
+<ol>
+<li>In your <code>flight-lookahead.component.ts</code>, remove the usage of the <code>online</code> property. Also, add shareReplay to <code>online$</code>:</li>
+</ol>
+<pre><code class="language-typescript"><span class="hljs-comment">// Remove this line:</span>
+<span class="hljs-comment">// online = false;  </span>
+
+<span class="hljs-built_in">this</span>.online$ = interval(<span class="hljs-number">2000</span>).pipe(
+    startWith(<span class="hljs-number">0</span>),
+    map(<span class="hljs-function"><span class="hljs-params">_</span> =&gt;</span> <span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.5</span>),
+    distinctUntilChanged(),
+    
+    <span class="hljs-comment">// Remote this line:</span>
+    <span class="hljs-comment">// tap(value =&gt; this.online = value)</span>
+    
+    <span class="hljs-comment">// Add this line:</span>
+    shareReplay({ bufferSize: <span class="hljs-number">1</span>, refCount: <span class="hljs-literal">true</span> }),
+
+);
+</code></pre>
+<ol start="2">
+<li>Switch to <code>flight-lookahead.component.html</code> and use <code>online$</code> with the <code>async</code> pipe instead of <code>online</code>:</li>
+</ol>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> [<span class="hljs-attr">ngStyle</span>]=<span class="hljs-string">&quot;{&#x27;background-color&#x27;: (online$ | async)? &#x27;green&#x27; : &#x27;red&#x27;}&quot;</span>&gt;</span>Online: {{online$ | async}}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<ol start="3">
+<li>Try out your solution</li>
+</ol>
+<h2 id="error-handling-">Error Handling *</h2>
+<p>Have a look at the description of <a href="https://rxjs-dev.firebaseapp.com/api/operators/catchError">catchError</a> and <a href="https://rxjs-dev.firebaseapp.com/api/operators/retry">retry</a> and try to use these operators in your lookahead example.</p>
+<p><strong>Hint:</strong> Change your <code>online$</code> observable so that it always returns <code>true</code> (<code>map(_ =&gt; true)</code>).</p>
+<p><strong>Hint:</strong> Use your network tab within the F12 tools to simulate an offline state.</p>
+<!-- ## RetryWhen **
+
+RetryWhen gets an Observable that emits the current error as a regular value. You have the following options:
+
+- Return the observable, e. g. with a delay, and RxJS returns the failed action
+- Return  -->
+<h2 id="closing-observables">Closing Observables</h2>
+<p>Extend your online$ observable as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.online$ = interval(<span class="hljs-number">1000</span>).pipe(
+  startWith(<span class="hljs-number">-1</span>),
+  tap(<span class="hljs-function"><span class="hljs-params">v</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;counter&#x27;</span>, v)),
+  [...]
+);
+</code></pre>
+<p>As you are just subscribing via async, the counter should stop when moving over to another route.</p>
+<p>Try out the following experiments:</p>
+<h3 id="experiment-1">Experiment 1</h3>
+<ol>
+<li>Set <code>refCount</code> for <code>online$</code> to <code>false</code> (<code>shareReplay({ bufferSize: 1, refCount: true})</code>).</li>
+<li>Expected result: The counter does not stop.</li>
+<li>Undo this experiment.</li>
+</ol>
+<h3 id="experiment-2">Experiment 2</h3>
+<ol>
+<li>Also subscribe to <code>online$</code> by hand without unsubscribing:</li>
+</ol>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.online$.subscribe();
+</code></pre>
+<ol start="2">
+<li>Expected result: The counter does not stop either.</li>
+</ol>
+<h3 id="experiment-3">Experiment 3</h3>
+<ol>
+<li>
+<p>Unsubscribe your subscription from experiment 2 by hand:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> subscription = <span class="hljs-built_in">this</span>.online$.subscribe();
+<span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> subscription.unsubscribe(), <span class="hljs-number">7000</span>);
+</code></pre>
+</li>
+<li>
+<p>Expected result: The counter should stop if you move to another route (at least 7 after loading the flight lookahead).</p>
+</li>
+</ol>
+<h3 id="experiment-4">Experiment 4</h3>
+<ol>
+<li>
+<p>Introduce a <code>close$</code> subject as a class member:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightLookaheadComponent {
+  close$ = <span class="hljs-keyword">new</span> Subject&lt;<span class="hljs-built_in">void</span>&gt;();
+
+  [...]
+}
+</code></pre>
+</li>
+<li>
+<p>Implement the <code>OnDestroy</code> interface to notify this Subject:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightLookaheadComponent <span class="hljs-keyword">implements</span> OnDestroy {
+
+  [...]
+  ngOnDestroy(): <span class="hljs-built_in">void</span> {
+      <span class="hljs-built_in">this</span>.close$.next();
+  }
+  [...]
+}
+</code></pre>
+</li>
+<li>
+<p>When subscribing to <code>online$</code> by hand, use <code>takeUntil</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.online$.pipe(takeUntil(<span class="hljs-built_in">this</span>.close$)).subscribe();
+</code></pre>
+</li>
+<li>
+<p>Expected result: Expected result: The counter should stop if you move to another route</p>
+</li>
+</ol>
+<h2 id="shopping-basket-with-scan-">Shopping Basket with Scan *</h2>
+<p>Let's allow to add flights to a shopping basket in a reactive way. For this, add a <code>basket$</code> Observable as well as an Observable <code>addToBasket$</code>:</p>
+<pre><code class="language-typescript">basket$: Observable&lt;Flight[]&gt;;
+
+<span class="hljs-keyword">private</span> addToBasketSubject = <span class="hljs-keyword">new</span> Subject&lt;Flight&gt;();
+addToBasket$ = <span class="hljs-built_in">this</span>.addToBasketSubject.asObservable();
+</code></pre>
+<p>Also, add a method <code>select</code>:</p>
+<pre><code class="language-typescript">select(f: Flight): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">this</span>.addToBasketSubject.next(f);
+}
+</code></pre>
+<p>Use <code>select</code> and <code>basket$</code> in your basket:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">table</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;table table-striped&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">tr</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let f of flights$ | async&quot;</span>&gt;</span>
+    [...]
+    <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">a</span> (<span class="hljs-attr">click</span>)=<span class="hljs-string">&quot;select(f)&quot;</span>&gt;</span>Select<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">table</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">pre</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">&quot;basket$ | async as basket&quot;</span>&gt;</span>{{ basket }}<span class="hljs-tag">&lt;/<span class="hljs-name">pre</span>&gt;</span>
+</code></pre>
+<p>Now, within <code>ngOnInit</code>, connect <code>addToBasket$</code> to <code>basket$</code> so that <code>basket$</code> always contains the selected flights. In order to prevent side effects, use the <a href="https://rxjs-dev.firebaseapp.com/api/operators/scan">scan operator</a> for this.</p>
+<details>
+<summary>Solution</summary>
+<p>
+<pre><code class="language-typescript"><span class="hljs-built_in">this</span>.basket$ = <span class="hljs-built_in">this</span>.addToBasket$.pipe(
+  scan(<span class="hljs-function">(<span class="hljs-params">acc, flight</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> [...acc, flight];
+  }, [])
+);
+</code></pre>
+</p>
+</details>
+<h2 id="bonus-result-history-with-scan-">Bonus: Result History with Scan **</h2>
+<p>Use the <code>scan</code> operator in a similar way as in the last exercise to provide an observable with <strong>all</strong> flights you've found while using the lookahaed. E. g., if searching for <em>Graz - Hamburg</em> and then for <em>Frankfurt - Berlin</em> one should find the results of both requests within this observable.</p>
+<p>Also, display these flights within your template.</p>
+<h2 id="custom-operator-switchmapcompensate-">Custom Operator: switchMapCompensate *</h2>
+<p>Write a custom <code>switchMapCompensate</code> operator combining the usage of <code>switchMap</code> and <code>catchError</code>. It shall allow to write</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> result$ = myObservable$.pipe(switchMapCompensate(<span class="hljs-function">(<span class="hljs-params">[value, valueTo]</span>) =&gt;</span> <span class="hljs-built_in">this</span>.load(value, valueTo)));
+</code></pre>
+<p>instead of:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> result$ = myObservable$.pipe(
+  switchMap(<span class="hljs-function">(<span class="hljs-params">[value, valueTo]</span>) =&gt;</span> <span class="hljs-built_in">this</span>.load(value, valueTo).pipe(catchError(<span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> <span class="hljs-keyword">of</span>([]))))
+);
+</code></pre>
+<details>
+<summary>First Simple Solution (untyped)</summary>
+<p>
+<pre><code class="language-typescript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">switchMapCompensate</span>(<span class="hljs-params">projector</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">source$</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> source$.pipe(switchMap(<span class="hljs-function">(<span class="hljs-params">p</span>) =&gt;</span> projector(p).pipe(catchError(<span class="hljs-function">(<span class="hljs-params">_</span>) =&gt;</span> <span class="hljs-keyword">of</span>([])))));
+  };
+}
+</code></pre>
+</p>
+</details>
+<details>
+<summary>Typed Solution</summary>
+<p>
+<pre><code class="language-typescript"><span class="hljs-keyword">type</span> Projector&lt;T, U&gt; = <span class="hljs-function">(<span class="hljs-params">item: T</span>) =&gt;</span> Observable&lt;U&gt;;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">switchMapCompensate</span>&lt;<span class="hljs-title">T</span>, <span class="hljs-title">U</span>&gt;(<span class="hljs-params">projector: Projector&lt;T, U&gt;</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">source$: Observable&lt;T&gt;</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> source$.pipe(switchMap(<span class="hljs-function">(<span class="hljs-params">p: T</span>) =&gt;</span> projector(p).pipe(catchError(<span class="hljs-function">(<span class="hljs-params">_</span>) =&gt;</span> <span class="hljs-keyword">of</span>([])))));
+  };
+}
+</code></pre>
+<p>Please note, that our <code>Projector</code> type is a bit simpler than the one used by <code>switchMap</code>. However, for our case and for a lot of other cases it should be good enough.</p>
+</p>
+</details>
+<h2 id="bonus-custom-operator-switchmapretry-">Bonus: Custom Operator: switchMapRetry **</h2>
+<p>Use the technique from the last exercise to write a <code>switchMapRetry</code> operator combining <code>switchMap</code> and <code>retry</code>. Provide a way to configure the amount of retries.</p>
+<h2 id="bonus-custom-operator-switchmapbackoff-for-exponential-backoff-">Bonus: Custom Operator: switchMapBackoff for Exponential Backoff **</h2>
+<p>Have a look to the description of <a href="https://rxjs-dev.firebaseapp.com/api/operators/retryWhen">retryWhen</a>.</p>
+<p>Also, have a look to the following custom operator implementing a combination of <code>switchMap</code> and <code>retryWhen</code> to provide an exponential backoff. This means we are waiting <code>2^i * delay</code> milliseconds before retrying a failed action where <code>i</code> is the count of already performed retries and <code>delay</code> represents the delay of the first retry:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> SwitchMapRetryOptions {
+  delayMsec: <span class="hljs-built_in">number</span>;
+  maxRetries: <span class="hljs-built_in">number</span>;
+}
+
+<span class="hljs-keyword">const</span> defaults: SwitchMapRetryOptions = {
+  delayMsec: <span class="hljs-number">500</span>,
+  maxRetries: <span class="hljs-number">3</span>,
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">switchMapBackoff</span>&lt;<span class="hljs-title">T</span>, <span class="hljs-title">U</span>&gt;(<span class="hljs-params">
+  projector: Projector&lt;T, U&gt;,
+  { maxRetries, delayMsec }: SwitchMapRetryOptions = defaults
+</span>) </span>{
+  <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">return</span> pipe(
+    switchMap(<span class="hljs-function">(<span class="hljs-params">item: T</span>) =&gt;</span>
+      projector(item).pipe(
+        retryWhen(<span class="hljs-function">(<span class="hljs-params">err$</span>) =&gt;</span>
+          err$.pipe(
+            switchMap(<span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> {
+              <span class="hljs-keyword">if</span> (i++ &gt;= maxRetries) {
+                <span class="hljs-keyword">return</span> throwError(err);
+              }
+              <span class="hljs-keyword">return</span> <span class="hljs-keyword">of</span>(err).pipe(delay(<span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">2</span>, i) * delayMsec));
+            })
+          )
+        )
+      )
+    )
+  );
+}
+</code></pre>
+<p>Further tasks:</p>
+<ul>
+<li>Try to find out how this operator works</li>
+<li>Use this operator in your example (just copy/paste it this time)</li>
+<li>Use the network tab (F12 dev tools) to see how it works</li>
+</ul>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="copy.js"></script>
+    <script src="toggle.js"></script>
+    <script src="copy-diff.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Workshop by AngularArchitects.io</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="description" content="Description" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs/styles/atom-one-light.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="copy.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+
+  <body class="ready">
+    <!-- <nav class="app-nav no-badge">
+    </nav> -->
+
+    <!-- placeholder:cover-page -->
+
+    <main>
+      <button class="sidebar-toggle" aria-label="Menu">
+        <div class="sidebar-toggle-button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <aside class="sidebar">
+        <div class="sidebar-nav">
+          <p>&nbsp;</p>
+          <ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="slides.html">Slides</a></li>
+<li><a href="00_getting-started.html">Getting Started</a></li>
+<li><a href="01_components.html">Components Deep Dive</a></li>
+<li><a href="03_RxJS.html">RxJs</a></li>
+<li><a href="02_data-binding.html">Data Binding with OnPush</a></li>
+<li><a href="03_directives.html">Directives - Deep Dive</a></li>
+<li><a href="05_routing_advanced.html">Advanced Routing</a></li>
+<li><a href="04_services-adv.html">Services & DI</a></li>
+<li><a href="06a_template-driven_forms.html">Template Driven Forms</a></li>
+<li><a href="06b_reactive_forms.html">Reactive Forms</a></li>
+</ul>
+
+        </div>
+      </aside>
+
+      <section class="content">
+        <article class="markdown-section" id="main">
+          <h1 id="services-and-dependency-injection">Services and Dependency Injection</h1>
+<ul>
+<li><a href="#services-and-dependency-injection">Services and Dependency Injection</a>
+<ul>
+<li><a href="#tree-shakable-providers-and-useclass">Tree-shakable Providers and useClass</a></li>
+<li><a href="#traditional-providers-and-useclass">Traditional Providers and useClass</a></li>
+<li><a href="#tree-shakable-providers-and-usefactory">Tree-shakable Providers and useFactory</a></li>
+<li><a href="#traditional-providers-and-usefactory">Traditional Providers and useFactory</a></li>
+<li><a href="#di-scopes">DI-Scopes</a>
+<ul>
+<li><a href="#providedin-with-lazymodule">providedIn with LazyModule</a></li>
+<li><a href="#issues-with-traditional-providers-and-lazy-loading">Issues with Traditional Providers and Lazy Loading</a></li>
+<li><a href="#forroot-and-forchild">forRoot and forChild</a></li>
+<li><a href="#providedin-root">providedIn: root</a></li>
+<li><a href="#local-services">Local Services</a></li>
+</ul>
+</li>
+<li><a href="#bonus-multi-providers-and-injectiontoken">Bonus: Multi-Providers and InjectionToken</a>
+<ul>
+<li><a href="#bonus-multi-providers-">Bonus: Multi-Providers *</a></li>
+<li><a href="#bonus-tree-shakable-providers-with-injectiontoken-constants-">Bonus: Tree-shakable Providers with InjectionToken Constants *</a></li>
+<li><a href="#bonus-traditional-providers-with-injectiontoken-constants-">Bonus: Traditional Providers with InjectionToken Constants *</a></li>
+<li><a href="#bonus-multi-providers-and-injectiontoken-">Bonus: Multi-Providers and InjectionToken *</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="tree-shakable-providers-and-useclass">Tree-shakable Providers and useClass</h2>
+<p>In this lab, you convert your <code>PassengerService</code> class into the following structure:</p>
+<p><img src="./images/k5-abstract-flight-service.png" alt=""></p>
+<ol>
+<li>
+<p>Add a <code>DefaultPassengerService</code> and a <code>DummyPassengerService</code>:</p>
+<pre><code>ng generate service default-passenger
+ng generate service dummy-passenger
+</code></pre>
+</li>
+<li>
+<p>Open the existing <code>passenger.service.ts</code> file and convert it into a <strong>abstract</strong> class:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger.service.ts</span>
+
+<span class="hljs-keyword">import</span> { Injectable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { Observable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+<span class="hljs-keyword">import</span> { DefaultPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./default-passenger.service&#x27;</span>;
+<span class="hljs-keyword">import</span> { Passenger } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger&#x27;</span>;
+
+<span class="hljs-meta">@Injectable</span>({
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>,
+  <span class="hljs-comment">// Add this redirection:</span>
+  useClass: DefaultPassengerService,
+})
+<span class="hljs-comment">// Make class abstract:</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
+  <span class="hljs-comment">// This methods becomes abstract too:</span>
+  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>default-passenger.service.ts</code>. Let the <code>DefaultPassengerService</code> implement the abstract <code>PassengerService</code> class:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/default-passenger.service.ts</span>
+
+<span class="hljs-keyword">import</span> { HttpClient, HttpHeaders, HttpParams } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/common/http&#x27;</span>;
+<span class="hljs-keyword">import</span> { Injectable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { Observable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+<span class="hljs-keyword">import</span> { Passenger } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger&#x27;</span>;
+<span class="hljs-keyword">import</span> { PassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger.service&#x27;</span>;
+
+<span class="hljs-meta">@Injectable</span>({
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> DefaultPassengerService <span class="hljs-keyword">implements</span> PassengerService {
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> http: HttpClient</span>) {}
+
+  find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
+    <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;http://demo.ANGULARarchitects.io/api/passenger&#x27;</span>;
+
+    <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> HttpHeaders().set(<span class="hljs-string">&#x27;Accept&#x27;</span>, <span class="hljs-string">&#x27;application/json&#x27;</span>);
+
+    <span class="hljs-keyword">const</span> params = <span class="hljs-keyword">new</span> HttpParams().set(<span class="hljs-string">&#x27;from&#x27;</span>, <span class="hljs-keyword">from</span>).set(<span class="hljs-string">&#x27;to&#x27;</span>, to);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.http.get&lt;Passenger[]&gt;(url, { headers, params });
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Open the <code>PassengerSearchComponent</code> and assure yourself that it uses the abstract <code>PassengerService</code> as the injection token.</p>
+</li>
+<li>
+<p>Start your application and check if the PassengerSearchComponents gets the <code>DefaultPassengerService</code> injected.</p>
+</li>
+<li>
+<p>Now, let's switch to a different implementation of the <code>PassengerService</code>.</p>
+<p>For this, open the file <code>dummy-passenger.service.ts</code> and let it also implement the abstract <code>PassengerService</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/dummy-passenger.service.ts</span>
+
+<span class="hljs-keyword">import</span> { Injectable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { Observable, <span class="hljs-keyword">of</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+<span class="hljs-keyword">import</span> { Passenger } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger&#x27;</span>;
+<span class="hljs-keyword">import</span> { PassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger.service&#x27;</span>;
+
+<span class="hljs-meta">@Injectable</span>({
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> DummyPassengerService <span class="hljs-keyword">implements</span> PassengerService {
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
+
+  find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">of</span>([
+      { id: <span class="hljs-number">1</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, to: <span class="hljs-string">&#x27;Flagranti&#x27;</span>, date: <span class="hljs-string">&#x27;2022-01-02T19:00+01:00&#x27;</span> },
+      { id: <span class="hljs-number">2</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, to: <span class="hljs-string">&#x27;Kognito&#x27;</span>, date: <span class="hljs-string">&#x27;2022-01-02T19:30+01:00&#x27;</span> },
+      { id: <span class="hljs-number">3</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, to: <span class="hljs-string">&#x27;Mallorca&#x27;</span>, date: <span class="hljs-string">&#x27;2022-01-02T20:00+01:00&#x27;</span> },
+    ]);
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Open the <code>passenger.service.ts</code> file again, and make it redirect to the <code>DummyPassengerService</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger.service.ts</span>
+
+<span class="hljs-keyword">import</span> { Injectable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { Observable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+<span class="hljs-keyword">import</span> { DummyPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./dummy-passenger.service&#x27;</span>;
+<span class="hljs-keyword">import</span> { Passenger } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger&#x27;</span>;
+
+<span class="hljs-meta">@Injectable</span>({
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>,
+  <span class="hljs-comment">// Redirect to DummyPassengerService for the time being:</span>
+  useClass: DummyPassengerService,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
+  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and check if the <code>DummyPassengerService</code> is now used by the <code>PassengerSearchComponent</code>.</p>
+<p>In this case, you should see the following hard-coded passengers:</p>
+<p><img src="./images/k5-dummy-service-result.png" alt=""></p>
+</li>
+</ol>
+<h2 id="traditional-providers-and-useclass">Traditional Providers and useClass</h2>
+<ol>
+<li>
+<p>Open the file <code>passenger.service.ts</code> and remove the settings provided to <code>Injectable</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger.service.ts</span>
+
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
+  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>app.module.ts</code> and add a traditional provider for the <code>PassengerService</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/app.module.ts</span>
+
+[...]
+<span class="hljs-comment">// Import services:</span>
+<span class="hljs-keyword">import</span> { PassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger.service&#x27;</span>;
+<span class="hljs-keyword">import</span> { DefaultPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./default-passenger.service&#x27;</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+  imports: [
+    [...]
+  ],
+  declarations: [
+    [...]
+  ],
+  providers: [
+      <span class="hljs-comment">// Add service Provides</span>
+      {
+        provide: PassengerService,
+        useClass: DefaultPassengerService
+      }
+  ],
+  bootstrap: [
+      AppComponent
+  ]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+</li>
+<li>
+<p>Start the application (if it isn't still running) and assure yourself that the <code>PassengerSearchComponent</code> uses the <code>DefaultPassengerService</code>.</p>
+</li>
+<li>
+<p>Undo the performed changes so that you are using Tree-shakable providers again. Also test this.</p>
+</li>
+</ol>
+<h2 id="tree-shakable-providers-and-usefactory">Tree-shakable Providers and useFactory</h2>
+<ol>
+<li>
+<p>Open the file <code>app.module.ts</code> and <strong>remove</strong> the configured traditional provider.</p>
+</li>
+<li>
+<p>Create a file <code>passenger-service.factory.ts</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-service.factory.ts</span>
+
+<span class="hljs-keyword">import</span> { HttpClient } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/common/http&#x27;</span>;
+<span class="hljs-keyword">import</span> { DefaultPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./default-passenger.service&#x27;</span>;
+<span class="hljs-keyword">import</span> { DummyPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./dummy-passenger.service&#x27;</span>;
+
+<span class="hljs-keyword">const</span> DEBUG = <span class="hljs-literal">false</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> createPassengerService = <span class="hljs-function">(<span class="hljs-params">http: HttpClient</span>) =&gt;</span> {
+  <span class="hljs-keyword">if</span> (!DEBUG) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DefaultPassengerService(http);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DummyPassengerService();
+  }
+};
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>passenger.service.ts</code> and add the following configuration to the <code>Injectable</code> provider:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger.service.ts</span>
+
+[...]
+<span class="hljs-comment">// New import:</span>
+<span class="hljs-keyword">import</span> { createPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger-service.factory&#x27;</span>;
+
+<span class="hljs-meta">@Injectable</span>({
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>,
+  useFactory: createPassengerService,
+  deps: [HttpClient]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
+  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application and assure yourself that the used <code>PassengerService</code> is now created by your factory. For this, you can switch the value of the constant <code>DEBUG</code>.</p>
+</li>
+</ol>
+<h2 id="traditional-providers-and-usefactory">Traditional Providers and useFactory</h2>
+<ol>
+<li>
+<p>Open the <code>passenger.service.ts</code> file and remove the configuration passed to the <code>Injectable</code> Decorator</p>
+<pre><code class="language-typescript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
+  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>app.module.ts</code> and introduce the following traditional provider:</p>
+</li>
+</ol>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/app.module.ts</span>
+
+[...]
+
+<span class="hljs-comment">// New import:</span>
+<span class="hljs-keyword">import</span> { createPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger-service.factory&#x27;</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+   imports: [
+     [...]
+   ],
+   declarations: [
+     [...]
+   ],
+   providers: [
+      {
+         provide: PassengerService,
+         useFactory: createPassengerService,
+         deps: [HttpClient]
+      }
+   ],
+   bootstrap: [
+      AppComponent
+   ]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AppModule { }
+</code></pre>
+<ol start="4">
+<li>Start your application and assure yourself that the used <code>PassengerService</code> is still created by your factory. For this, you can switch the value of the constant <code>DEBUG</code>.</li>
+</ol>
+<h2 id="di-scopes">DI-Scopes</h2>
+<h3 id="providedin-with-lazymodule">providedIn with LazyModule</h3>
+<ol>
+<li>
+<p>In your flight-booking folder, add a file <code>passenger-api.module.ts</code> by hand:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-booking/passenger-api.module.ts</span>
+
+<span class="hljs-keyword">import</span> { NgModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+  imports: [],
+  <span class="hljs-built_in">exports</span>: [],
+  declarations: [],
+  providers: [],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerApiModule {}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>flight-booking.module.ts</code> and import the created <code>PassengerApiModule</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-booking/passenger-booking.module.ts</span>
+
+[...]
+<span class="hljs-keyword">import</span> { PassengerApiModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./passenger-api.module&#x27;</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+  imports: [
+    [...]
+    <span class="hljs-comment">// Add this line:</span>
+    PassengerApiModule
+  ],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> FlightBookingModule { }
+</code></pre>
+</li>
+<li>
+<p>Open your <code>passenger.service.ts</code> and let it point to your lazy API module:</p>
+<pre><code class="language-typescript"><span class="hljs-meta">@Injectable</span>({
+  <span class="hljs-comment">// Change providedIn as follows:</span>
+  providedIn: PassengerApiModule,
+  useClass: DefaultPassengerService,
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {}
+</code></pre>
+</li>
+<li>
+<p>Start your application and make sure it works.</p>
+</li>
+<li>
+<p>Use the Browser's dev tools to assure yourself lazy loading works.</p>
+</li>
+<li>
+<p>Search the lazy bundle for the entry <code>class DefaultPassengerService</code>. This entry proofs that the service is now also lazy loaded.</p>
+</li>
+</ol>
+<h3 id="issues-with-traditional-providers-and-lazy-loading">Issues with Traditional Providers and Lazy Loading</h3>
+<ol>
+<li>
+<p>Open the file <code>auth.service.ts</code> and have a look at it.</p>
+</li>
+<li>
+<p>Also, remove the object passed to Injectable:</p>
+<pre><code class="language-typescript"><span class="hljs-meta">@Injectable</span>(
+  <span class="hljs-comment">// Remove this:</span>
+  <span class="hljs-comment">// {</span>
+  <span class="hljs-comment">//  providedIn: &#x27;root&#x27;</span>
+  <span class="hljs-comment">// }</span>
+)
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AuthService { ... }
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>home.component.ts</code> and find out how it uses the <code>AuthService</code>.</p>
+</li>
+<li>
+<p>Open the file <code>shared.module.ts</code> and register the <code>AuthService</code> as a traditional provider. Please note that the SharedModule is imported with both, the <code>AppModule</code> and the lazy <code>PassengerBookingModule</code>.</p>
+</li>
+<li>
+<p>Open the <code>passenger-search.component.ts</code> file and adjust it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-booking/passenger-search/passenger-search.component.ts</span>
+
+<span class="hljs-keyword">import</span> { Component, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+<span class="hljs-keyword">import</span> { AuthService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../../shared/auth/auth.service&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  selector: <span class="hljs-string">&#x27;app-passenger-search&#x27;</span>,
+  templateUrl: <span class="hljs-string">&#x27;./passenger-search.component.html&#x27;</span>,
+  styleUrls: [<span class="hljs-string">&#x27;./passenger-search.component.css&#x27;</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerSearchComponent <span class="hljs-keyword">implements</span> OnInit {
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> authService: AuthService</span>) {}
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+    <span class="hljs-built_in">console</span>.debug(<span class="hljs-string">&#x27;userName&#x27;</span>, <span class="hljs-built_in">this</span>.authService.userName);
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application and log in. See that the HomeComponent displays the user's name. Switch to the <code>passenger-search.component.ts</code> file and have a look at the JavaScript console. See that here the current user's name is not known. The reason is that the lazy <code>FlightBookingModule</code> has its own DI scope and hence its own instance of the <code>AuthService</code>.</p>
+</li>
+</ol>
+<h3 id="forroot-and-forchild">forRoot and forChild</h3>
+<ol>
+<li>
+<p>Open your <code>shared.module.ts</code> and adjust it as follows:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { NgModule } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-comment">// Import ModuleWithProviders:</span>
+<span class="hljs-keyword">import</span> { ModuleWithProviders } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+[...]
+
+<span class="hljs-meta">@NgModule</span>({
+  imports: [
+    CommonModule
+  ],
+  <span class="hljs-comment">// Remove all proviers here:</span>
+  providers: [],
+  [...]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SharedModule {
+
+  <span class="hljs-comment">// Add static forRoot:</span>
+  <span class="hljs-keyword">static</span> forRoot(): ModuleWithProviders&lt;SharedModule&gt; {
+    <span class="hljs-comment">// SharedModule + Shared Services</span>
+    <span class="hljs-keyword">return</span> {
+      ngModule: SharedModule,
+      providers: [
+        AuthService
+      ]
+    }
+  }
+
+  <span class="hljs-comment">// Add static forChild:</span>
+  <span class="hljs-keyword">static</span> forChild(): ModuleWithProviders&lt;SharedModule&gt; {
+    <span class="hljs-comment">// SharedModule **without** Shared Services</span>
+    <span class="hljs-keyword">return</span> {
+      ngModule: SharedModule,
+      providers: [] <span class="hljs-comment">// No providers for Child Modules</span>
+    }
+  }
+}
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>app.module.ts</code> and make sure the <code>SharedModule</code> is imported using <code>forRoot</code>:</p>
+<pre><code class="language-typescript">imports: [
+  [...],
+  SharedModule.forRoot()
+]
+</code></pre>
+</li>
+<li>
+<p>Open the <code>passenger-booking.module.ts</code> file and make sure the <code>SharedModule</code> is imported using <code>forChild</code>:</p>
+<pre><code class="language-typescript">imports: [
+  [...],
+  SharedModule.forChild()
+]
+</code></pre>
+</li>
+<li>
+<p>Start your application and login. Now, you should see that the <code>PassengerSearchComponent</code> also knows the user's name.</p>
+</li>
+</ol>
+<h3 id="providedin-root">providedIn: root</h3>
+<p>Using tree-shakable providers, we don't need a <code>forRoot</code> and <code>forChild</code> method. If you undo all the changes done in the last two sections, everything works fine as well.</p>
+<h3 id="local-services">Local Services</h3>
+<ol>
+<li>
+<p>Open the file <code>passenger-search.component.ts</code> and introduce a local provider for the <code>PassengerSearchComponent</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-search/passenger-search.component.ts</span>
+
+[...]
+<span class="hljs-keyword">import</span> { PassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../passenger.service&#x27;</span>;
+<span class="hljs-comment">// Add this import:</span>
+<span class="hljs-keyword">import</span> { DummyPassengerService } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../dummy-passenger.service&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>({
+  [...]
+  <span class="hljs-comment">// Add this:</span>
+  providers: [
+    {
+      provide: PassengerService,
+      useClass: DummyPassengerService
+    }
+  ]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerSearchComponent <span class="hljs-keyword">implements</span> OnInit {
+
+  [...]
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> PassengerService: PassengerService</span>) {
+  }
+
+  [...]
+
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it isn't still running) and assure yourself that the PassengerSearchComponent uses the local <code>DummyPassengerService</code> again.</p>
+</li>
+<li>
+<p>Remove the introduced local service in <code>passenger-search.component.ts</code> and assure yourself that the global <code>DefaultPassengerService</code> is used again.</p>
+</li>
+</ol>
+<h2 id="bonus-multi-providers-and-injectiontoken">Bonus: Multi-Providers and InjectionToken<T></h2>
+<h3 id="bonus-multi-providers-">Bonus: Multi-Providers *</h3>
+<ol>
+<li>
+<p>Open the <code>passenger.service.ts</code> file and remove the configuration passed to the <code>Injectable</code> Decorator (if it's still there):</p>
+<pre><code class="language-typescript"><span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
+  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+}
+</code></pre>
+</li>
+<li>
+<p>Open the <code>app.module.ts</code> file and introduce the following multi-providers:</p>
+<pre><code class="language-typescript">[...]
+providers: [
+  {
+      provide: PassengerService,
+      useClass: DefaultPassengerService,
+      multi: <span class="hljs-literal">true</span>
+  },
+  {
+      provide: PassengerService,
+      useClass: DummyPassengerService,
+      multi: <span class="hljs-literal">true</span>
+  }
+],
+[...]
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>passenger-search.component.ts</code>. Instead of a <code>PassengerService</code>, inject now a PassengerService Array (<code>PassengerService[]</code>):</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-search/passenger-search.component.ts</span>
+
+<span class="hljs-comment">// Import Inject:</span>
+<span class="hljs-keyword">import</span> { Component, Inject, OnInit } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+[...]
+
+<span class="hljs-meta">@Component</span>( [...] )
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerSearchComponent <span class="hljs-keyword">implements</span> OnInit {
+
+  [...]
+
+  <span class="hljs-comment">// Change the next line:</span>
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-meta">@Inject</span>(PassengerService) <span class="hljs-keyword">private</span> PassengerServices: PassengerService[]</span>) {
+  }
+
+  search(): <span class="hljs-built_in">void</span> {
+    [...]
+  }
+
+  [...]
+
+}
+</code></pre>
+<p>Please note, that we need to use Inject with the <code>PassengerService</code> type, because Arrays (e. g. <code>PassengerService[]</code>) cannot be used as Tokens. Using constants of the type <code>InjectionToken&lt;T&gt;</code> as shown in the next section can help here.</p>
+</li>
+<li>
+<p>Also, in the file <code>passenger-search.component.ts</code>, update the search method so that it uses all <code>PassengerService</code>s in the injected array:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/passenger-search/passenger-search.component.ts</span>
+
+[...]
+
+<span class="hljs-comment">// New import</span>
+<span class="hljs-keyword">import</span> { merge } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;rxjs&#x27;</span>;
+
+<span class="hljs-meta">@Component</span>( [...] )
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerSearchComponent <span class="hljs-keyword">implements</span> OnInit {
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-meta">@Inject</span>(PassengerService) <span class="hljs-keyword">private</span> PassengerServices: PassengerService[]</span>) {
+  }
+
+  ngOnInit(): <span class="hljs-built_in">void</span> {
+  }
+
+  search(): <span class="hljs-built_in">void</span> {
+
+    <span class="hljs-built_in">this</span>.passengers = [];
+
+    <span class="hljs-keyword">const</span> observables = <span class="hljs-built_in">this</span>.PassengerServices.map(<span class="hljs-function"><span class="hljs-params">fs</span> =&gt;</span> fs.find(<span class="hljs-built_in">this</span>.from, <span class="hljs-built_in">this</span>.to));
+
+    <span class="hljs-comment">// Merge results of individual observables:</span>
+    <span class="hljs-keyword">const</span> observable = merge(...observables);
+      <span class="hljs-comment">// This is the same as: merge(observables[0], observables[1], ...)</span>
+
+    observable.subscribe({
+      next: <span class="hljs-function">(<span class="hljs-params">additionalPassengers</span>) =&gt;</span> {
+        <span class="hljs-built_in">this</span>.passengers = [...this.passengers, ...additionalPassengers];
+          <span class="hljs-comment">// Same as: [this.passengers[0], this.passengers[1], ..., additionalPassengers[0], additionalPassengers[1], ...]</span>
+      },
+      error: <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> {
+        <span class="hljs-built_in">console</span>.debug(<span class="hljs-string">&#x27;Error&#x27;</span>, err);
+      }
+    });
+
+  }
+
+  [...]
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application and assure yourself that both registered <code>PassengerService</code> implementations are used.</p>
+</li>
+</ol>
+<h3 id="bonus-tree-shakable-providers-with-injectiontoken-constants-">Bonus: Tree-shakable Providers with InjectionToken<T> Constants *</h3>
+<ol>
+<li>
+<p>Create a file <code>tokens.ts</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/tokens.ts</span>
+
+<span class="hljs-keyword">import</span> { InjectionToken } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> BASE_URL = <span class="hljs-keyword">new</span> InjectionToken&lt;<span class="hljs-built_in">string</span>&gt;(<span class="hljs-string">&#x27;BASE_URL&#x27;</span>, {
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>,
+  factory: <span class="hljs-function">() =&gt;</span> <span class="hljs-string">&#x27;http://demo.ANGULARarchitects.io/api/&#x27;</span>,
+});
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>default-passenger.service.ts</code> and inject the defined <code>BASE_URL</code> <code>InjectionToken</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// src/app/default-passenger.service.ts</span>
+
+<span class="hljs-comment">// Add this import:</span>
+<span class="hljs-keyword">import</span> { BASE_URL } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./tokens&#x27;</span>;
+
+<span class="hljs-comment">// Import Inject:</span>
+<span class="hljs-keyword">import</span> { Inject, Injectable } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@angular/core&#x27;</span>;
+[...]
+
+<span class="hljs-meta">@Injectable</span>({
+  providedIn: <span class="hljs-string">&#x27;root&#x27;</span>
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> DefaultPassengerService <span class="hljs-keyword">implements</span> PassengerService {
+
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">
+    <span class="hljs-keyword">private</span> http: HttpClient,
+    <span class="hljs-comment">// Inject BASE_URL:</span>
+    <span class="hljs-meta">@Inject</span>(BASE_URL) <span class="hljs-keyword">private</span> baseUrl: <span class="hljs-built_in">string</span>,
+  </span>) { }
+
+  find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
+    <span class="hljs-keyword">const</span> url = <span class="hljs-built_in">this</span>.baseUrl + <span class="hljs-string">&#x27;passenger&#x27;</span>;
+
+    <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> HttpHeaders()
+      .set(<span class="hljs-string">&#x27;Accept&#x27;</span>, <span class="hljs-string">&#x27;application/json&#x27;</span>);
+
+    <span class="hljs-keyword">const</span> params = <span class="hljs-keyword">new</span> HttpParams()
+      .set(<span class="hljs-string">&#x27;from&#x27;</span>, <span class="hljs-keyword">from</span>)
+      .set(<span class="hljs-string">&#x27;to&#x27;</span>, to);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.http.get&lt;Passenger[]&gt;(url, {headers, params});
+  }
+
+  [...]
+}
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it's not still running) and assure yourself the new token is used.</p>
+</li>
+</ol>
+<h3 id="bonus-traditional-providers-with-injectiontoken-constants-">Bonus: Traditional Providers with InjectionToken<T> Constants *</h3>
+<ol>
+<li>
+<p>Open the file <code>tokens.ts</code> and remove the configuration from the <code>InjectionToken</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> BASE_URL = <span class="hljs-keyword">new</span> InjectionToken&lt;<span class="hljs-built_in">string</span>&gt;(<span class="hljs-string">&#x27;BASE_URL&#x27;</span>);
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>app.module.ts</code> and introduce the following provider:</p>
+<pre><code class="language-typescript">providers: [
+  {
+      provide: BASE_URL,
+      useValue: <span class="hljs-string">&#x27;http://demo.ANGULARarchitects.io/api/&#x27;</span>
+  }
+],
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it's not still running) and assure yourself the new provider is used.</p>
+</li>
+</ol>
+<h3 id="bonus-multi-providers-and-injectiontoken-">Bonus: Multi-Providers and InjectionToken<T> *</h3>
+<p>As mentioned above, Arrays cannot be used a tokens. Hence, it's quite usual to combine Multi-Providers together with an InjectionToken<T>.</p>
+<ol>
+<li>
+<p>Open your <code>tokens.ts</code> file and add the following <code>InjectionToken</code>:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> PASSENGER_SERVICES = <span class="hljs-keyword">new</span> InjectionToken&lt;PassengerService&gt;(<span class="hljs-string">&#x27;PASSENGER_SERVICES&#x27;</span>);
+</code></pre>
+</li>
+<li>
+<p>Open the file <code>app.module.ts</code> and introduce the following providers. If you already have them, update them accordingly:</p>
+<pre><code class="language-typescript">providers: [
+  {
+      provide: PASSENGER_SERVICES,
+      useClass: DefaultPassengerService,
+      multi: <span class="hljs-literal">true</span>
+  },
+  {
+      provide: PASSENGER_SERVICES,
+      useClass: DummyPassengerService,
+      multi: <span class="hljs-literal">true</span>
+  },
+],
+</code></pre>
+</li>
+<li>
+<p>Now, switch to your <code>passenger-search.component.ts</code> and adjust the constructor as follows. Please note that <code>@Inject</code> points now to the <code>PASSENGER_SERVICES</code> <code>InjectionToken</code> introduced before:</p>
+<pre><code class="language-typescript">[...]
+<span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-meta">@Inject</span>(PASSENGER_SERVICES) <span class="hljs-keyword">private</span> PassengerServices: PassengerService[]</span>) {
+}
+[...]
+</code></pre>
+</li>
+<li>
+<p>Start your application (if it's not still running) and assure yourself the multi provider works.</p>
+</li>
+</ol>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="copy.js"></script>
+    <script src="toggle.js"></script>
+    <script src="copy-diff.js"></script>
+
+  </body>
+</html>
