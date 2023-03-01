@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { fromEvent } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { BASE_URL } from './app.module';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,8 @@ import { map } from 'rxjs/operators';
 export class AppComponent {
   title = 'Hello World!';
 
-  constructor() {
+  constructor(@Inject(BASE_URL) private baseUrl: string) {
+    console.log(baseUrl);
     const click$ = fromEvent(document, 'click');
 
     const pipedClick$ = click$.pipe(map((event) => `Event time: ${event.timeStamp}}`));
