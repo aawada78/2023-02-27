@@ -108,7 +108,7 @@ ng generate service dummy-passenger
 <span class="hljs-comment">// Make class abstract:</span>
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
   <span class="hljs-comment">// This methods becomes abstract too:</span>
-  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+  <span class="hljs-keyword">abstract</span> find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
 }
 </code></pre>
 </li>
@@ -128,12 +128,12 @@ ng generate service dummy-passenger
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> DefaultPassengerService <span class="hljs-keyword">implements</span> PassengerService {
   <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> http: HttpClient</span>) {}
 
-  find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
+  find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
     <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;http://demo.ANGULARarchitects.io/api/passenger&#x27;</span>;
 
     <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> HttpHeaders().set(<span class="hljs-string">&#x27;Accept&#x27;</span>, <span class="hljs-string">&#x27;application/json&#x27;</span>);
 
-    <span class="hljs-keyword">const</span> params = <span class="hljs-keyword">new</span> HttpParams().set(<span class="hljs-string">&#x27;from&#x27;</span>, <span class="hljs-keyword">from</span>).set(<span class="hljs-string">&#x27;to&#x27;</span>, to);
+    <span class="hljs-keyword">const</span> params = <span class="hljs-keyword">new</span> HttpParams().set(<span class="hljs-string">&#x27;name&#x27;</span>, name).set(<span class="hljs-string">&#x27;firstname&#x27;</span>, firstname);
 
     <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.http.get&lt;Passenger[]&gt;(url, { headers, params });
   }
@@ -162,12 +162,12 @@ ng generate service dummy-passenger
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> DummyPassengerService <span class="hljs-keyword">implements</span> PassengerService {
   <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {}
 
-  find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">of</span>([
-      { id: <span class="hljs-number">1</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, to: <span class="hljs-string">&#x27;Flagranti&#x27;</span>, date: <span class="hljs-string">&#x27;2022-01-02T19:00+01:00&#x27;</span> },
-      { id: <span class="hljs-number">2</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, to: <span class="hljs-string">&#x27;Kognito&#x27;</span>, date: <span class="hljs-string">&#x27;2022-01-02T19:30+01:00&#x27;</span> },
-      { id: <span class="hljs-number">3</span>, <span class="hljs-keyword">from</span>: <span class="hljs-string">&#x27;Frankfurt&#x27;</span>, to: <span class="hljs-string">&#x27;Mallorca&#x27;</span>, date: <span class="hljs-string">&#x27;2022-01-02T20:00+01:00&#x27;</span> },
-    ]);
+  find(name: <span class="hljs-built_in">string</span>, firstName: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
+     <span class="hljs-keyword">return</span> <span class="hljs-keyword">of</span>([
+       { id: <span class="hljs-number">2957</span>, name: <span class="hljs-string">&#x27;Smith&#x27;</span>, firstName: <span class="hljs-string">&#x27;Emma&#x27;</span>, bonusMiles: <span class="hljs-number">112504</span>, passengerStatus: <span class="hljs-string">&#x27;C&#x27;</span>, flightBookings: [] },
+       { id: <span class="hljs-number">2981</span>, name: <span class="hljs-string">&#x27;Smith&#x27;</span>, firstName: <span class="hljs-string">&#x27;Mia&#x27;</span>, bonusMiles: <span class="hljs-number">81694</span>, passengerStatus: <span class="hljs-string">&#x27;B&#x27;</span>, flightBookings: [] },
+       { id: <span class="hljs-number">3005</span>, name: <span class="hljs-string">&#x27;Smith&#x27;</span>, firstName: <span class="hljs-string">&#x27;Hanna&#x27;</span>, bonusMiles: <span class="hljs-number">440712</span>, passengerStatus: <span class="hljs-string">&#x27;A&#x27;</span>, flightBookings: [] }
+     ]);
   }
 }
 </code></pre>
@@ -187,7 +187,7 @@ ng generate service dummy-passenger
   useClass: DummyPassengerService,
 })
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
-  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+  <span class="hljs-keyword">abstract</span> find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
 }
 </code></pre>
 </li>
@@ -205,7 +205,7 @@ ng generate service dummy-passenger
 
 <span class="hljs-meta">@Injectable</span>()
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
-  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+  <span class="hljs-keyword">abstract</span> find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
 }
 </code></pre>
 </li>
@@ -284,7 +284,7 @@ ng generate service dummy-passenger
   deps: [HttpClient]
 })
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
-  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+  <span class="hljs-keyword">abstract</span> find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
 }
 </code></pre>
 </li>
@@ -298,7 +298,7 @@ ng generate service dummy-passenger
 <p>Open the <code>passenger.service.ts</code> file and remove the configuration passed to the <code>Injectable</code> Decorator</p>
 <pre><code class="language-typescript"><span class="hljs-meta">@Injectable</span>()
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
-  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+  <span class="hljs-keyword">abstract</span> find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
 }
 </code></pre>
 </li>
@@ -424,7 +424,7 @@ ng generate service dummy-passenger
 <span class="hljs-meta">@Component</span>({
   selector: <span class="hljs-string">&#x27;app-passenger-search&#x27;</span>,
   templateUrl: <span class="hljs-string">&#x27;./passenger-search.component.html&#x27;</span>,
-  styleUrls: [<span class="hljs-string">&#x27;./passenger-search.component.css&#x27;</span>],
+  styleUrls: [<span class="hljs-string">&#x27;./passenger-search.component.scss&#x27;</span>],
 })
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> PassengerSearchComponent <span class="hljs-keyword">implements</span> OnInit {
   <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> authService: AuthService</span>) {}
@@ -551,7 +551,7 @@ ng generate service dummy-passenger
 <p>Open the <code>passenger.service.ts</code> file and remove the configuration passed to the <code>Injectable</code> Decorator (if it's still there):</p>
 <pre><code class="language-typescript"><span class="hljs-meta">@Injectable</span>()
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> PassengerService {
-  <span class="hljs-keyword">abstract</span> find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
+  <span class="hljs-keyword">abstract</span> find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt;;
 }
 </code></pre>
 </li>
@@ -684,15 +684,15 @@ providers: [
     <span class="hljs-meta">@Inject</span>(BASE_URL) <span class="hljs-keyword">private</span> baseUrl: <span class="hljs-built_in">string</span>,
   </span>) { }
 
-  find(<span class="hljs-keyword">from</span>: <span class="hljs-built_in">string</span>, to: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
+  find(name: <span class="hljs-built_in">string</span>, firstname: <span class="hljs-built_in">string</span>): Observable&lt;Passenger[]&gt; {
     <span class="hljs-keyword">const</span> url = <span class="hljs-built_in">this</span>.baseUrl + <span class="hljs-string">&#x27;passenger&#x27;</span>;
 
     <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> HttpHeaders()
       .set(<span class="hljs-string">&#x27;Accept&#x27;</span>, <span class="hljs-string">&#x27;application/json&#x27;</span>);
 
     <span class="hljs-keyword">const</span> params = <span class="hljs-keyword">new</span> HttpParams()
-      .set(<span class="hljs-string">&#x27;from&#x27;</span>, <span class="hljs-keyword">from</span>)
-      .set(<span class="hljs-string">&#x27;to&#x27;</span>, to);
+      .set(<span class="hljs-string">&#x27;name&#x27;</span>, name)
+      .set(<span class="hljs-string">&#x27;firstname&#x27;</span>, firstname);
 
     <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.http.get&lt;Passenger[]&gt;(url, {headers, params});
   }
