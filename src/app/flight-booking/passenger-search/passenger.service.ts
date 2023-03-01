@@ -10,9 +10,9 @@ import { Passenger } from './passenger';
   providedIn: 'root',
   useFactory: (http: HttpClient) => {
     if (environment.production) {
-      return new DefaultPassengerService(http);
-    } else {
       return new DummyPassengerService(http);
+    } else {
+      return new DefaultPassengerService(http);
     }
   },
   deps: [HttpClient]
