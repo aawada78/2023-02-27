@@ -17,6 +17,8 @@ import { ClickWithWarningDirective } from './controls/click-with-warning.directi
 import { TooltipDirective } from './controls/tooltip.directive';
 import { TableFieldDirective } from './controls/data-table/table-field.directive';
 import { DataTableComponent } from './controls/data-table/data-table.component';
+import { AddressControl } from './controls/address.control';
+import { PersonSubformComponent } from './controls/person.subform';
 
 @NgModule({
   imports: [CommonModule, FormsModule],
@@ -28,13 +30,13 @@ import { DataTableComponent } from './controls/data-table/data-table.component';
 
     // Von der CLI eingefügt
     CityValidationDirective,
-     TabbedPaneComponent,
-     TabComponent,
-     TabNavigatorComponent,
-     ClickWithWarningDirective,
-     TooltipDirective,
-     TableFieldDirective,
-     DataTableComponent
+    TabbedPaneComponent,
+    TabComponent,
+    TabNavigatorComponent,
+    ClickWithWarningDirective,
+    TooltipDirective,
+    TableFieldDirective,
+    DataTableComponent
   ],
   exports: [
     DateComponent,
@@ -46,13 +48,13 @@ import { DataTableComponent } from './controls/data-table/data-table.component';
 
     // Neue Einträge
     CityValidationDirective,
-     TabbedPaneComponent,
-     TabComponent,
-     TabNavigatorComponent,
-     ClickWithWarningDirective,
-     TooltipDirective,
-     TableFieldDirective,
-     DataTableComponent
+    TabbedPaneComponent,
+    TabComponent,
+    TabNavigatorComponent,
+    ClickWithWarningDirective,
+    TooltipDirective,
+    TableFieldDirective,
+    DataTableComponent
   ]
 })
 export class SharedModule {}

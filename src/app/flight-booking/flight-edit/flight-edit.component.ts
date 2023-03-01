@@ -1,38 +1,81 @@
+import { Address, AddressControl } from './../../shared/controls/address.control';
+import { JsonPipe, NgIf, NgStyle } from '@angular/common';
+import { inject } from '@angular/core';
+import { FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 // src/app/flight-booking/flight-edit/flight-edit.component.ts
 
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { CanDeactivateComponent } from 'src/app/shared/guards/flights.guard';
 import { Flight } from '../flight';
+import { validateCity, validateCityWithParams } from '../../shared/validation/city-validator';
+import { PersonSubformComponent } from 'src/app/shared/controls/person.subform';
 
 @Component({
   selector: 'app-flight-edit',
+  standalone: true,
   templateUrl: './flight-edit.component.html',
   styleUrls: ['./flight-edit.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [NgStyle, NgIf, JsonPipe, ReactiveFormsModule, AddressControl, PersonSubformComponent]
 })
-export class FlightEditComponent implements OnInit, CanDeactivateComponent {
+export class FlightEditComponent implements OnInit {
   id = 0;
   showDetails = false;
-  deactivate = false;
-  flight!: Flight;
-
-  constructor(private route: ActivatedRoute) {}
-  canDeactivate(): Observable<boolean> {
-    return of(this.deactivate);
-  }
+  carColor = '';
+  editForm = inject(NonNullableFormBuilder).group(
+    {
+      id: [0],
+      from: ['Graz', [Validators.required, Validators.minLength(3), validateCity]],
+      to: ['Hamburg', [validateCityWithParams(['Graz', 'Hamburg', 'Amsterdam'])]],
+      date: [new Date().toISOString()],
+      delayed: [false],
+      address: [
+        {
+          street: '',
+          // eslint-disable-next-line id-blacklist
+          number: '',
+          zip: '',
+          city: '',
+          country: ''
+        } as Address
+      ],
+      person: new FormGroup({})
+    },
+    { updateOn: 'change' }
+  );
+  #route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    this.route.params.subscribe((p) => {
-      this.id = p.id;
+    this.#route.params.subscribe((p) => {
+      this.editForm.patchValue({
+        id: p.id
+      });
       this.showDetails = p.showDetails;
+      this.carColor = p.carColor;
     });
 
-    this.route.data.subscribe({
-      next: (data) => {
-        this.flight = data.flight;
-      }
-    });
+    this.editForm.controls.from.valueChanges.subscribe((value) => console.log('From value', value));
+
+    this.editForm.valueChanges.subscribe(console.log);
+  }
+
+  save(): void {
+    console.log('value', this.editForm.value);
+    console.log('valid', this.editForm.valid);
+    console.log('dirty', this.editForm.dirty);
+    console.log('touched', this.editForm.touched);
+
+    this.dispatch(this.editForm.getRawValue());
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  dispatch(flight: Flight): void {}
+
+  toggleDisableAddress(): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    this.editForm.controls.address.enabled ? this.editForm.controls.address.disable() : this.editForm.controls.address.enable();
+  }
+
+  reset(): void {
+    this.editForm.reset();
   }
 }
